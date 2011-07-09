@@ -6,7 +6,11 @@ red chips.
 The code includes F#, OCaml, C# and C++ implementations, using
 both functional and imperative style of coding.
 
-Usage:
+Precompiled windows binary of the game is under:
+
+    win32.binary/Score4.zip
+
+To play with the sources:
 
 1. Checkout
 
