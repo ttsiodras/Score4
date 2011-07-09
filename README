@@ -1,0 +1,32 @@
+This is a simple implementation of Score4 (also called Connect4).
+The goal is to form horizontal, vertical or diagonal series of
+4 of your chips (green). The computer tries to do the same, using
+red chips.
+
+The code includes F#, OCaml, C# and C++ implementations, using
+both functional and imperative style of coding.
+
+Usage:
+
+1. Checkout
+
+2. "make" :
+
+    make play
+        to play a graphics game of score4 (via PyGame)
+
+    make playSimple
+        to play a console game of score4
+
+    make benchmark
+        to benchmark the 4 languages (F#/C#/OCaml/C++)
+
+3. The "make play" keys:
+
+- Click with mouse to drop a green chip on a column
+- ESCAPE to exit 
+- SPACE to start a new game.
+
+Article about this code at:
+
+http://users.softlab.ntua.gr/~ttsiod/score4.html
