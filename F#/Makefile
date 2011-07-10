@@ -15,7 +15,7 @@ all:	$(TARGETS)
 %.exe:	%.fs
 	$(MONO) $(FSHARPCOMPILER) --checked- --optimize+ $^
 
-test:	| $(TARGETS)
+test:	| all
 	sh -c "time $(MONO) ./score4_functional.exe o53 y43 -debug"
 	@echo "That was F# (functional)"
 	@echo "========================"

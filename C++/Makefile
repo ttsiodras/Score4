@@ -63,7 +63,7 @@ deps.$(CFG)/Group0_%.d: %.cpp
 	sed 's,\($*\)\.o[ :]*,objs.$(CFG)\/Group0_\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
-test:
+test:	|all
 	sh -c "time ./bin.release/score4 o53 y43 -debug"
 	@echo "That was C++"
 	@echo "=============="

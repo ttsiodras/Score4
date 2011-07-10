@@ -13,7 +13,7 @@ all:	score4.exe
 score4.exe:	score4.cs
 	$(CSHARPCOMPILER) $^
 
-test:	| score4.exe
+test:	| all
 	sh -c "time $(MONO) ./score4.exe o53 y43 -debug"
 	@echo "That was C# (imperative, C++ mirror)"
 	@echo "===================================="

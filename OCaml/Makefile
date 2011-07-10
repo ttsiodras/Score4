@@ -9,7 +9,7 @@ all:	$(TARGETS)
 clean:
 	rm -f $(TARGETS) $(CRUFT)
 
-test:
+test:	|all
 	sh -c "time ./score4_functional.bin o53 y43 -debug"
 	@echo "That was OCaml (functional)"
 	@echo "==========================="
