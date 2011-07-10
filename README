@@ -3,14 +3,14 @@ The goal is to form horizontal, vertical or diagonal series of
 4 of your chips (green). The computer tries to do the same, using
 red chips.
 
-The code includes F#, OCaml, C# and C++ implementations, using
-both functional and imperative style of coding.
+The GNU-licensed code includes F#, OCaml, C# and C++ implementations, 
+using both functional and imperative styles of coding.
 
 Precompiled windows binary of the game is under:
 
     https://github.com/downloads/ttsiodras/Score4/Score4-win32.binary.zip
 
-To play with the sources:
+To fiddle with the sources:
 
 1. Checkout
 
@@ -25,12 +25,12 @@ To play with the sources:
     make benchmark
         to benchmark the 4 languages (F#/C#/OCaml/C++)
 
-3. The "make play" keys:
+3. The "make play" controls:
 
 - Click with mouse to drop a green chip on a column
 - ESCAPE to exit 
 - SPACE to start a new game.
 
-Article about this code at:
+Article about this GNU-licensed code at:
 
 http://users.softlab.ntua.gr/~ttsiod/score4.html
