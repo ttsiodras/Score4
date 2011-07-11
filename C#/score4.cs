@@ -20,35 +20,35 @@ namespace score4
         };
 
         public class Board {
-	    // Initially, this was Mycell[,]
-	    // Unfortunately, C# 2D arrays are a lot slower
-	    // than simple arrays of arrays (Jagged arrays):
+            // Initially, this was Mycell[,]
+            // Unfortunately, C# 2D arrays are a lot slower
+            // than simple arrays of arrays (Jagged arrays):
             public Mycell[][] _slots;
-	    public Board()
-	    {
-	       _slots = new Mycell[height][];
-	       for(int i=0; i<height; i++)
-		   _slots[i] = new Mycell[width];
+            public Board()
+            {
+               _slots = new Mycell[height][];
+               for(int i=0; i<height; i++)
+                   _slots[i] = new Mycell[width];
             }
         };
 
         // diagonal offsets, down-right
         static int[][] negativeSlope = new int[4][] {
-	    new int[2]{ 0, 0 },
-	    new int[2]{ 1, 1 },
-	    new int[2]{ 2, 2 },
-	    new int[2]{ 3, 3 }
-	};
+            new int[2]{ 0, 0 },
+            new int[2]{ 1, 1 },
+            new int[2]{ 2, 2 },
+            new int[2]{ 3, 3 }
+        };
 
         // diagonal offsets, up-right
         static int[][] positiveSlope = new int[4][] {
-	    new int [2] {  0, 0 },
-	    new int [2] { -1, 1 },
-	    new int [2] { -2, 2 },
-	    new int [2] { -3, 3 }
-	};
+            new int [2] {  0, 0 },
+            new int [2] { -1, 1 },
+            new int [2] { -2, 2 },
+            new int [2] { -3, 3 }
+        };
 
-	// Jagged array, made static to avoid re-initializing on every ScoreBoard call
+        // Jagged array, made static to avoid re-initializing on every ScoreBoard call
         static int[][] scores = new int[height][] {
                 new int[width], new int[width], new int[width],
                 new int[width], new int[width], new int[width]
