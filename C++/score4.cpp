@@ -12,7 +12,7 @@ int g_maxDepth = 7;
 
 enum Mycell {
     Orange=1,
-    Yellow=2,
+    Yellow=-1, // See starting comment below in ScoreBoard
     Barren=0
 };
 
@@ -31,18 +31,25 @@ bool inside(int y, int x)
 int ScoreBoard(const Board& board)
 {
     int counters[9] = {0,0,0,0,0,0,0,0,0};
-    int scores[height][width];
 
-    for(int y=0; y<height; y++)
-	for(int x=0; x<width; x++)
-	    switch(board._slots[y][x]) {
-	    case Orange:
-		scores[y][x] = 1; break;
-	    case Yellow:
-		scores[y][x] = -1; break;
-	    case Barren:
-		scores[y][x] = 0; break;
-	    }
+    // C++ does not need a "translation stage", like this one:
+    //int scores[height][width];
+    //
+    //for(int y=0; y<height; y++)
+    //    for(int x=0; x<width; x++)
+    //        switch(board._slots[y][x]) {
+    //        case Orange:
+    //            scores[y][x] = 1; break;
+    //        case Yellow:
+    //            scores[y][x] = -1; break;
+    //        case Barren:
+    //            scores[y][x] = 0; break;
+    //        }
+    //
+    // Instead, enumerants can be accessed as integers:
+    typedef Mycell EnumsAreIntegersInC[height][width];
+    const EnumsAreIntegersInC& scores = board._slots;
+
     // Horizontal spans
     for(int y=0; y<height; y++) {
 	int score = scores[y][0] + scores[y][1] + scores[y][2];
