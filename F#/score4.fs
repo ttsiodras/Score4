@@ -96,17 +96,16 @@ let scoreBoard (board:Cell array array) =
         counts.[5] + 2*counts.[6] + 5*counts.[7] + 10*counts.[8] -
             counts.[3] - 2*counts.[2] - 5*counts.[1] - 10*counts.[0]
 
-exception NoMoreWork of int
-
 let dropDisk (board:Cell array array) column color =
-    try
-        for y=height-1 downto 0 do
-            if board.[y].[column] = Barren then
-                board.[y].[column] <- color
-                raise (NoMoreWork y)
-        -1
-    with
-        NoMoreWork y -> y
+    let searching = ref true
+    let y = ref (height-1)
+    while !searching && !y>=0 do
+        if board.[!y].[column] = Barren then
+            board.[!y].[column] <- color
+            searching := false
+        else
+            y := !y - 1
+    !y
 
 exception FoundKillerMove of int*int
 

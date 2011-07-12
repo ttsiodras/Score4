@@ -96,20 +96,15 @@ let scoreBoard (board:Cell array array) =
         counts.[5] + 2*counts.[6] + 5*counts.[7] + 10*counts.[8] -
             counts.[3] - 2*counts.[2] - 5*counts.[1] - 10*counts.[0]
 
-exception NoMoreWork
-
 let dropDisk (board:Cell array array) column color =
     let newBoard = Array.zeroCreate height
-    try
-        for y=0 to height-1 do
-            newBoard.[y] <- Array.copy board.[y]
-        for y=height-1 downto 0 do
-            if newBoard.[y].[column] = Barren then
-                newBoard.[y].[column] <- color
-                raise NoMoreWork
-        newBoard
-    with
-        NoMoreWork -> newBoard
+    let searching = ref true
+    for y=height-1 downto 0 do
+        newBoard.[y] <- Array.copy board.[y]
+        if !searching && newBoard.[y].[column] = Barren then
+            searching := false
+            newBoard.[y].[column] <- color
+    newBoard
 
 let rec abMinimax maximizeOrMinimize color depth board =
     match depth with
