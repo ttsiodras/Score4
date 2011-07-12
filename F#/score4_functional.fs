@@ -133,15 +133,14 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     validBoards |>
                     List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
                     List.map snd
-                let allData = List.zip3 validMoves validBoards bestScores
+                let allData = List.zip validMoves bestScores
                 if !debug && depth = maxDepth then
-                    List.iter (fun (move,_,score) ->
+                    List.iter (fun (move,score) ->
                         Printf.printf "Depth %d, placing on %d, Score:%d\n" depth move score) allData ;
-                let getScore (_, _, score) = score
-                let (bestMove,_,bestScore) =
-                    match maximizeOrMinimize with
-                    | true  -> allData |> List.sortBy getScore |> List.rev |> List.head
-                    | false -> allData |> List.sortBy getScore |> List.head
+                let best  (_,s as l) (_,s' as r) = if s > s' then l else r
+                let worst (_,s as l) (_,s' as r) = if s < s' then l else r
+                let bestMove,bestScore =
+                    List.fold (if maximizeOrMinimize then best else worst) (List.head allData) (List.tail allData)
                 (Some(bestMove),bestScore)
 
 let inArgs str args =

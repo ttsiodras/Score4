@@ -18,15 +18,15 @@ let (--) i j =
 
 let ( |> ) x fn = fn x
 
-(* This emulates the List.zip3 of F# *)
-let myzip3 a b c =
-    let rec innermyzip3 a b c accum =
+(* This emulates the List.zip of F# *)
+let myzip a b =
+    let rec innermyzip a b accum =
         match a with
         | [] -> accum
         | _  ->
-            let newList = (List.hd a,List.hd b,List.hd c)::accum in
-            innermyzip3 (List.tl a) (List.tl b) (List.tl c) newList in
-    List.rev (innermyzip3 a b c [])
+            let newList = (List.hd a,List.hd b)::accum in
+            innermyzip (List.tl a) (List.tl b) newList in
+    List.rev (innermyzip a b [])
 
 let inside y x =
     y>=0 && y<height && x>=0 && x<width
@@ -156,15 +156,14 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let bestScores = validBoards |>
                     List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
                     List.map snd in
-                let allData = myzip3 validMoves validBoards bestScores in
+                let allData = myzip validMoves bestScores in
                 if !debug && depth = maxDepth then
-                    List.iter (fun (column,_,score) ->
+                    List.iter (fun (column,score) ->
                         Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column score) allData ;
-                let cmpScore (_,_,score1) (_,_,score2) = compare score1 score2 in
-                let (bestMove,_,bestScore) =
-                    match maximizeOrMinimize with
-                    | true -> allData |> List.stable_sort cmpScore |> List.rev |> List.hd
-                    | _    -> allData |> List.stable_sort cmpScore |> List.hd in
+		let best  (_,s as l) (_,s' as r) = if s > s' then l else r
+		and worst (_,s as l) (_,s' as r) = if s < s' then l else r in
+		let bestMove,bestScore =
+		    List.fold_left (if maximizeOrMinimize then best else worst) (List.hd allData) (List.tl allData) in
                 (Some(bestMove),bestScore)
 
 (* let any = List.fold_left (||) false
