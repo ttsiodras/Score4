@@ -24,10 +24,6 @@ enum MyCell : int {
 
 alias MyCell[WIDTH][HEIGHT] Board;
 
-bool isInside(in int y, in int x) pure nothrow {
-    return y >= 0 && y < HEIGHT && x >= 0 && x < WIDTH;
-}
-
 int scoreBoard(const ref Board board) nothrow {
     int[9] counters;
 
@@ -35,10 +31,8 @@ int scoreBoard(const ref Board board) nothrow {
     foreach (y; 0 .. HEIGHT) {
         int score = board[y][0] + board[y][1] + board[y][2];
         foreach (x; 3 .. WIDTH) {
-            assert(isInside(y, x));
             score += board[y][x];
             counters[score + 4]++;
-            assert(isInside(y, x - 3));
             score -= board[y][x - 3];
         }
     }
@@ -47,10 +41,8 @@ int scoreBoard(const ref Board board) nothrow {
     foreach (x; 0 .. WIDTH) {
         int score = board[0][x] + board[1][x] + board[2][x];
         foreach (y; 3 .. HEIGHT) {
-            assert(isInside(y, x));
             score += board[y][x];
             counters[score + 4]++;
-            assert(isInside(y - 3, x));
             score -= board[y - 3][x];
         }
     }
@@ -62,7 +54,6 @@ int scoreBoard(const ref Board board) nothrow {
             foreach (idx; Range!4) {
                 const int yy = y + idx;
                 const int xx = x + idx;
-                assert(isInside(yy, xx));
                 score += board[yy][xx];
             }
             counters[score + 4]++;
@@ -76,7 +67,6 @@ int scoreBoard(const ref Board board) nothrow {
             foreach (idx; Range!4) {
                 const int yy = y - idx;
                 const int xx = x + idx;
-                assert(isInside(yy, xx));
                 score += board[yy][xx];
             }
             counters[score + 4]++;

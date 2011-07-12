@@ -23,11 +23,6 @@ class Cell:
     Orange = 1
     Yellow = -1
 
-
-def is_inside(y, x):
-    return y >= 0 and y < HEIGHT and x >= 0 and x < WIDTH
-
-
 def score_board(board):
     counters = [0] * 9
 
@@ -35,20 +30,16 @@ def score_board(board):
     for y in xrange(HEIGHT):
         score = board[y][0] + board[y][1] + board[y][2]
         for x in xrange(3, WIDTH):
-            assert is_inside(y, x)
             score += board[y][x]
             counters[score + 4] += 1
-            assert is_inside(y, x - 3)
             score -= board[y][x - 3]
 
     # Vertical spans
     for x in xrange(WIDTH):
         score = board[0][x] + board[1][x] + board[2][x]
         for y in xrange(3, HEIGHT):
-            assert is_inside(y, x)
             score += board[y][x]
             counters[score + 4] += 1
-            assert is_inside(y - 3, x)
             score -= board[y - 3][x]
 
     # Down-right (and up-left) diagonals
@@ -58,7 +49,6 @@ def score_board(board):
             for idx in xrange(4):
                 yy = y + idx
                 xx = x + idx
-                assert is_inside(yy, xx)
                 score += board[yy][xx]
             counters[score + 4] += 1
 
@@ -69,7 +59,6 @@ def score_board(board):
             for idx in xrange(4):
                 yy = y - idx
                 xx = x + idx
-                assert is_inside(yy, xx)
                 score += board[yy][xx]
             counters[score + 4] += 1
 
