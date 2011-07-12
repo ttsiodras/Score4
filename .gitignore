@@ -16,3 +16,8 @@ OCaml/score4_functional.cmi
 OCaml/score4_functional.cmx
 OCaml/score4_functional.o
 C++/score4.bin
+Java/Score4$1.class
+Java/Score4$Board.class
+Java/Score4$Mycell.class
+Java/Score4$ScoreMoveTuple.class
+Java/Score4.class
