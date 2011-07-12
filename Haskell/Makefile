@@ -10,5 +10,5 @@ clean:
 
 test:	|all
 	sh -c "time ./score4.bin o53 y43 -debug"
-	@echo "That was Haskell (functional,lazy)
+	@echo "That was Haskell (functional,lazy)"
 	@echo "=================================="
