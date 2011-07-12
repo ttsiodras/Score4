@@ -37,7 +37,7 @@ To fiddle with the sources:
    - ESCAPE to exit 
    - SPACE to start a new game.
 
-4. To run the benchmark in only one the languages, e.g. OCaml
+4. To run the benchmark in only one of the languages, e.g. OCaml...
 
     cd OCaml
     make 
