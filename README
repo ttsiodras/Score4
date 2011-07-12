@@ -4,7 +4,8 @@ The goal is to form horizontal, vertical or diagonal series of
 red chips.
 
 The GNU-licensed code includes F#, OCaml, C# and C++ implementations, 
-using both functional and imperative styles of coding.
+using both functional and imperative styles of coding, with ports 
+coming in from all over the Web to many more languages.
 
 Precompiled windows binary of the game is under:
 
