@@ -33,7 +33,12 @@ To fiddle with the sources:
 
 3. The "make play" controls:
 
-- Click with mouse to drop a green chip on a column
-- ESCAPE to exit 
-- SPACE to start a new game.
+   - Click with mouse to drop a green chip on a column
+   - ESCAPE to exit 
+   - SPACE to start a new game.
 
+4. To run the benchmark in only one the languages, e.g. OCaml
+
+    cd OCaml
+    make 
+    make test
