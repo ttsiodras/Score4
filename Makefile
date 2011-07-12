@@ -1,4 +1,4 @@
-DIRS:="F\#" "C\#" OCaml C++
+DIRS:="F\#" "C\#" OCaml C++ Java
 
 all:
 	@echo Use:
