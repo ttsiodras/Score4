@@ -98,28 +98,25 @@ var maxDepth = flag.Int("level", 7, "")
 
 func loadBoard(argv []string) *Board {
 	newBoard := new(Board)
-	for _, str := range argv {
-		if str[0] == 'o' || str[0] == 'y' {
-			c := Yellow
-			if str[0] == 'o' {
-				c = Orange
-			}
-			y, x := str[1]-'0', str[2]-'0'
+	m := map[byte]Mycell{'o': Orange, 'y': Yellow}
+	for _, s := range argv {
+		if c, ok := m[s[0]]; ok {
+			y, x := s[1]-'0', s[2]-'0'
 			newBoard.slots[y][x] = c
 		}
 	}
 	return newBoard
 }
 
-func abMinimax(maximizeOrMinimize bool, color Mycell, depth int, board *Board) (move, score int) {
+func abMinimax(maximize bool, color Mycell, depth int, board *Board) (move, score int) {
 	if depth == 0 {
 		return -1, ScoreBoard(board)
 	}
-	bestScore := 10000000
-	if maximizeOrMinimize {
-		bestScore = -bestScore
+	bestScore, bestMove := 10000000, 1
+	winning := yellowWins
+	if maximize {
+		bestScore, winning = -bestScore, orangeWins
 	}
-	bestMove := 1
 	for column := 0; column < width; column++ {
 		if board.slots[0][column] != Barren {
 			continue
@@ -128,36 +125,17 @@ func abMinimax(maximizeOrMinimize bool, color Mycell, depth int, board *Board) (
 		if rowFilled == -1 {
 			continue
 		}
-		s := ScoreBoard(board)
-		winning := yellowWins
-		if maximizeOrMinimize {
-			winning = orangeWins
-		}
-		if s == winning {
-			bestMove = column
-			bestScore = s
+		if s := ScoreBoard(board); s == winning {
 			board.slots[rowFilled][column] = Barren
-			break
+			return column, s
 		}
-		c := Orange
-		if color == Orange {
-			c = Yellow
-		}
-		_, scoreInner := abMinimax(!maximizeOrMinimize, c, depth-1, board)
+		_, scoreInner := abMinimax(!maximize, -color, depth-1, board)
 		board.slots[rowFilled][column] = Barren
 		if depth == *maxDepth && *debug {
 			fmt.Printf("Depth %d, placing on %d, score:%d\n", depth, column, scoreInner)
 		}
-		if maximizeOrMinimize {
-			if scoreInner >= bestScore {
-				bestScore = scoreInner
-				bestMove = column
-			}
-		} else {
-			if scoreInner <= bestScore {
-				bestScore = scoreInner
-				bestMove = column
-			}
+		if maximize && scoreInner >= bestScore || !maximize && scoreInner <= bestScore {
+			bestScore, bestMove = scoreInner, column
 		}
 	}
 	return bestMove, bestScore
@@ -166,11 +144,11 @@ func abMinimax(maximizeOrMinimize bool, color Mycell, depth int, board *Board) (
 func main() {
 	flag.Parse()
 	board := loadBoard(flag.Args())
-	scoreOrig := ScoreBoard(board)
-	if scoreOrig == orangeWins {
+	score := ScoreBoard(board)
+	if score == orangeWins {
 		fmt.Println("I win")
 		return
-	} else if scoreOrig == yellowWins {
+	} else if score == yellowWins {
 		fmt.Println("You win")
 		return
 	} else {
