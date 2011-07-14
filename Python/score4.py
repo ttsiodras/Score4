@@ -1,6 +1,6 @@
-# Makes sense only if you use PyPy...
-#
-# -O is needed to disable the asserts
+# Using python makes sense:
+# - if you use PyPy... (14 seconds on my PC, with F# at 8)
+# - if you use ShedSkin (10 seconds on my PC!)
 
 from sys import argv
 try:
