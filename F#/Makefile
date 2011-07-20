@@ -1,8 +1,8 @@
-UNAME = $(shell uname)
+UNAME = $(shell uname | sed 's,NT-.*,NT,')
 
-ifeq ($(UNAME), CYGWIN_NT-5.1)
+ifeq ($(UNAME), CYGWIN_NT)
 MONO:=
-FSHARPCOMPILER:="/c/Program Files/Microsoft F\#/v4.0/Fsc.exe"
+FSHARPCOMPILER:="/c/Program Files (x86)/Microsoft F\#/v4.0/Fsc.exe"
 else
 MONO:=mono
 FSHARPCOMPILER:=/opt/FSharp-2.0.0.0/bin/fsc.exe

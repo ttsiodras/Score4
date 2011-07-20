@@ -1,6 +1,6 @@
-UNAME = $(shell uname)
+UNAME = $(shell uname | sed 's,NT-.*,NT,')
 
-ifeq ($(UNAME), CYGWIN_NT-5.1)
+ifeq ($(UNAME), CYGWIN_NT)
 MONO:=
 CSHARPCOMPILER:=csc.exe  /checked- /optimize+ /unsafe+
 else
