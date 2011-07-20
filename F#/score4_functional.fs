@@ -127,6 +127,10 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let bestScores = 
                     validBoards |>
                     List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
+(* Use this to take advantage of SMP:
+                    Array.ofList |>
+                    (if depth>=7 then Array.Parallel.map else Array.map) (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
+                    List.ofArray |> *)
                     List.map snd
                 let allData = List.zip validMoves bestScores
                 if !debug && depth = maxDepth then
