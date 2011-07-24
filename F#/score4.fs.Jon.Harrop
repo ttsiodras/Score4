@@ -1,0 +1,143 @@
+open System.Collections.Generic
+
+let width = 7
+let height = 6
+let maxDepth = 7
+let orangeWins = 1000000
+let yellowWins = -orangeWins
+let mutable debug = true
+
+type Cell =
+    | Orange = 1
+    | Yellow = -1
+    | Barren = 0
+
+let counts = Array.create 9 0
+
+let scoreBoard (board:Cell array array) =
+    Array.fill counts 0 9 0
+    let scores = board
+
+    (* Horizontal spans *)
+    for y=0 to height-1 do
+        let mutable score = int scores.[y].[0] + int scores.[y].[1] + int scores.[y].[2]
+        for x=3 to width-1 do
+            score <- score + int scores.[y].[x];
+            counts.[score + 4] <- counts.[score + 4] + 1
+            score <- score - int scores.[y].[x-3]
+
+    (* Vertical spans *)
+    for x=0 to width-1 do
+        let mutable score = int scores.[0].[x] + int scores.[1].[x] + int scores.[2].[x]
+        for y=3 to height-1 do
+            score <- score + int scores.[y].[x];
+            counts.[score + 4] <- counts.[score + 4] + 1
+            score <- score - int scores.[y-3].[x];
+
+    (* Down-right (and up-left) diagonals *)
+    for y=0 to height-4 do
+        for x=0 to width-4 do
+            let mutable score = 0 in
+            for idx=0 to 3 do
+                score <- score + int scores.[y+idx].[x+idx]
+            counts.[score + 4] <- counts.[score + 4] + 1
+
+    (* up-right (and down-left) diagonals *)
+    for y=3 to height-1 do
+        for x=0 to width-4 do
+            let mutable score = 0 in
+            for idx=0 to 3 do
+                score <- score + int scores.[y-idx].[x+idx]
+            counts.[score + 4] <- counts.[score + 4] + 1
+
+    if counts.[0] <> 0 then
+        yellowWins
+    else if counts.[8] <> 0 then
+        orangeWins
+    else
+        counts.[5] + 2*counts.[6] + 5*counts.[7] + 10*counts.[8] -
+            counts.[3] - 2*counts.[2] - 5*counts.[1] - 10*counts.[0]
+
+let dropDisk (board:Cell array array) column color =
+    let mutable searching = true
+    let mutable y = height-1
+    while searching && y>=0 do
+        if board.[y].[column] = Cell.Barren then
+            board.[y].[column] <- color
+            searching <- false
+        else
+            y <- y - 1
+    y
+
+[<Struct>]
+type T2<'a, 'b> =
+    val a : 'a
+    val b : 'b
+    new(a, b) = {a=a; b=b}
+
+let (|T2|) (t2: T2<_,_>) = t2.a, t2.b
+
+let rec abMinimax maximizeOrMinimize color depth board =
+    if depth=0 then T2(None, scoreBoard board) else
+        let startingScore = match maximizeOrMinimize with true -> -10000000 | false -> 10000000
+        let mutable bestScore = startingScore
+        let mutable bestMove = -1
+        let killerTarget = match maximizeOrMinimize with true -> orangeWins | false -> yellowWins
+        let mutable column = -1
+        let mutable foundKiller = false
+        while not foundKiller && (column<width-1) do
+            column <- column+1
+            if board.[0].[column] = Cell.Barren then
+                let rowFilled = dropDisk board column color
+                let s = scoreBoard board
+                if s = killerTarget then
+                    board.[rowFilled].[column] <- Cell.Barren
+                    bestScore <- s
+                    bestMove <- column
+                    foundKiller <- true
+                else
+                    let x = abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board
+                    let scoreInner = x.b
+                    board.[rowFilled].[column] <- Cell.Barren
+                    if depth = maxDepth && debug then
+                        printf "Depth %d, placing on %d, Score:%d\n" depth column scoreInner ;
+                    if maximizeOrMinimize then
+                        if scoreInner>= bestScore then
+                            bestScore <- scoreInner
+                            bestMove <- column
+                    else
+                        if scoreInner<= bestScore then
+                            bestScore <- scoreInner
+                            bestMove <- column
+        done
+        T2(Some bestMove, bestScore)
+
+let inArgs str args = Seq.exists ((=) str) args
+
+let loadBoard args =
+    Array.init height (fun y ->
+        Array.init width (fun x ->
+            let orange = sprintf "o%d%d" y x
+            let yellow = sprintf "y%d%d" y x
+            if inArgs orange args then Cell.Orange
+            elif inArgs yellow args then Cell.Yellow
+            else Cell.Barren))
+
+[<EntryPoint>]
+let main (args:string[]) =
+    let board = loadBoard args
+    let scoreOrig = scoreBoard board
+    debug <- inArgs "-debug" args
+    if scoreOrig = orangeWins then
+        printf "I win"
+        -1
+    elif scoreOrig = yellowWins then
+        printf "You win"
+        -1
+    else
+        match abMinimax true Cell.Orange maxDepth board with
+        | T2(Some column, _) -> printfn "%A" column
+        | _ -> printfn "No move possible"
+        0
+    |> ignore
+    0
