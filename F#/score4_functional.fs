@@ -18,12 +18,6 @@ let rec any l =
     | true::xs  -> true
     | false::xs -> any xs
 
-let otherColor color = 
-    match color with
-        | Cell.Orange -> Cell.Yellow
-        | Cell.Yellow -> Cell.Orange
-        | _      -> Cell.Barren
-
 (* diagonal, down-right *)
 let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
 
@@ -119,7 +113,7 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let validBoards = validMovesAndBoards |> List.map snd
                 let bestScores = 
                     validBoards |>
-                    List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
+                    List.map (abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1)) |>
 (* Use this to take advantage of SMP:
                     Array.ofList |>
                     (if depth>=7 then Array.Parallel.map else Array.map) (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>

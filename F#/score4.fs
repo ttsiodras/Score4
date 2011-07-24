@@ -18,12 +18,6 @@ let rec any l =
     | true::xs  -> true
     | false::xs -> any xs
 
-let inline otherColor color =
-    match color with
-        | Cell.Orange -> Cell.Yellow
-        | Cell.Yellow -> Cell.Orange
-        | _      -> Cell.Barren
-
 (* diagonal, down-right *)
 let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
 
@@ -121,7 +115,7 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     bestMove <- column
                     foundKiller <- true
                 else
-                    match abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1) board with
+                    match abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board with
                     | (moveInner,scoreInner) ->
                         board.[rowFilled].[column] <- Cell.Barren
                         if depth = maxDepth && debug then
