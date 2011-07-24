@@ -5,7 +5,7 @@ let height = 6
 let maxDepth = 7
 let orangeWins = 1000000
 let yellowWins = -orangeWins
-let debug = ref true
+let mutable debug = true
 
 type Cell =
     | Orange = 1
@@ -18,49 +18,47 @@ let rec any l =
     | true::xs  -> true
     | false::xs -> any xs
 
-(* diagonal, down-right *)
-let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
-
-(* diagonal, up-right   *)
-let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
+let counts = Array.create 9 0
 
 let scoreBoard (board:Cell array array) =
-    let counts = [| 0;0;0;0;0;0;0;0;0 |]
+    Array.fill counts 0 9 0
+
+    (* No need to create a "stub" - by using enums we can just operate on the board!
     let scores = Array.zeroCreate height
     for y=0 to height-1 do
         scores.[y] <- Array.zeroCreate width
         for x=0 to width-1 do
-            scores.[y].[x] <- int board.[y].[x]
+            scores.[y].[x] <- int board.[y].[x] *)
+
+    let scores = board
 
     let inline myincr (arr:int array) idx =
         arr.[idx] <- arr.[idx] + 1
 
     (* Horizontal spans *)
     for y=0 to height-1 do
-        let mutable score = scores.[y].[0] + scores.[y].[1] + scores.[y].[2]
+        let mutable score = int scores.[y].[0] + int scores.[y].[1] + int scores.[y].[2]
         for x=3 to width-1 do
-            score <- score + scores.[y].[x];
+            score <- score + int scores.[y].[x];
             myincr counts (score+4) ;
-            score <- score - scores.[y].[x-3]
+            score <- score - int scores.[y].[x-3]
 
     (* Vertical spans *)
     for x=0 to width-1 do
-        let mutable score = scores.[0].[x] + scores.[1].[x] + scores.[2].[x]
+        let mutable score = int scores.[0].[x] + int scores.[1].[x] + int scores.[2].[x]
         for y=3 to height-1 do
-            score <- score + scores.[y].[x];
+            score <- score + int scores.[y].[x];
             myincr counts (score+4);
-            score <- score - scores.[y-3].[x];
+            score <- score - int scores.[y-3].[x];
 
     (* Down-right (and up-left) diagonals *)
     for y=0 to height-4 do
         for x=0 to width-4 do
             let mutable score = 0 in
             for idx=0 to 3 do
-                match negativeSlope.[idx] with
-                | (yofs,xofs) ->
-                    let yy = y+yofs in
-                    let xx = x+xofs in
-                    score <- score + scores.[yy].[xx]
+                let yy = y+idx in
+                let xx = x+idx in
+                score <- score + int scores.[yy].[xx]
             myincr counts (score+4)
 
     (* up-right (and down-left) diagonals *)
@@ -68,11 +66,9 @@ let scoreBoard (board:Cell array array) =
         for x=0 to width-4 do
             let mutable score = 0 in
             for idx=0 to 3 do
-                match positiveSlope.[idx] with
-                | (yofs,xofs) ->
-                    let yy = y+yofs in
-                    let xx = x+xofs in
-                    score <- score + scores.[yy].[xx]
+                let yy = y-idx in
+                let xx = x+idx in
+                score <- score + int scores.[yy].[xx]
             myincr counts (score+4)
 
     if counts.[0] <> 0 then
@@ -120,7 +116,7 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     List.ofArray |> *)
                     List.map snd
                 let allData = List.zip validMoves bestScores
-                if !debug && depth = maxDepth then
+                if debug && depth = maxDepth then
                     List.iter (fun (move,score) ->
                         Printf.printf "Depth %d, placing on %d, Score:%d\n" depth move score) allData ;
                 let best  (_,s as l) (_,s' as r) = if s > s' then l else r
@@ -153,7 +149,7 @@ let loadBoard args =
 let main (args:string[]) =
     let board = loadBoard args
     let scoreOrig = scoreBoard board
-    let debug = inArgs "-debug" args
+    debug <- inArgs "-debug" args
     if scoreOrig = orangeWins then
         printf "I win"
         -1
