@@ -8,18 +8,15 @@ let yellowWins = -orangeWins
 let debug = ref true
 
 type Cell =
-    | Orange
-    | Yellow
-    | Barren
+    | Orange = 1
+    | Yellow = 2
+    | Barren = 3
 
 let rec any l =
     match l with
     | []        -> false
     | true::xs  -> true
     | false::xs -> any xs
-
-let inside y x =
-    y>=0 && y<height && x>=0 && x<width
 
 let otherColor color = 
     match color with
@@ -35,9 +32,9 @@ let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
 
 let scoreBoard (board:Cell array array) =
     let rateCell = function
-        | Orange -> 1
-        | Yellow -> -1
-        | Barren -> 0
+        | Cell.Orange -> 1
+        | Cell.Yellow -> -1
+        | _ -> 0
     let counts = [| 0;0;0;0;0;0;0;0;0 |]
     let scores = Array.zeroCreate height
     for y=0 to height-1 do
@@ -45,48 +42,48 @@ let scoreBoard (board:Cell array array) =
         for x=0 to width-1 do
             scores.[y].[x] <- rateCell board.[y].[x]
 
-    let myincr (arr:int array) idx = 
+    let inline myincr (arr:int array) idx =
         arr.[idx] <- arr.[idx] + 1
 
     (* Horizontal spans *)
     for y=0 to height-1 do
-        let score = ref (scores.[y].[0] + scores.[y].[1] + scores.[y].[2]) in
+        let mutable score = scores.[y].[0] + scores.[y].[1] + scores.[y].[2]
         for x=3 to width-1 do
-            score := !score + scores.[y].[x];
-            myincr counts (!score+4) ;
-            score := !score - scores.[y].[x-3]
+            score <- score + scores.[y].[x];
+            myincr counts (score+4) ;
+            score <- score - scores.[y].[x-3]
 
     (* Vertical spans *)
     for x=0 to width-1 do
-        let score = ref (scores.[0].[x] + scores.[1].[x] + scores.[2].[x]) in
+        let mutable score = scores.[0].[x] + scores.[1].[x] + scores.[2].[x]
         for y=3 to height-1 do
-            score := !score + scores.[y].[x];
-            myincr counts (!score+4);
-            score := !score - scores.[y-3].[x];
+            score <- score + scores.[y].[x];
+            myincr counts (score+4);
+            score <- score - scores.[y-3].[x];
 
     (* Down-right (and up-left) diagonals *)
     for y=0 to height-4 do
         for x=0 to width-4 do
-            let score = ref 0 in
+            let mutable score = 0 in
             for idx=0 to 3 do
                 match negativeSlope.[idx] with
                 | (yofs,xofs) ->
                     let yy = y+yofs in
                     let xx = x+xofs in
-                    score := !score + scores.[yy].[xx]
-            myincr counts (!score+4)
+                    score <- score + scores.[yy].[xx]
+            myincr counts (score+4)
 
     (* up-right (and down-left) diagonals *)
     for y=3 to height-1 do
         for x=0 to width-4 do
-            let score = ref 0 in
+            let mutable score = 0 in
             for idx=0 to 3 do
                 match positiveSlope.[idx] with
                 | (yofs,xofs) ->
                     let yy = y+yofs in
                     let xx = x+xofs in
-                    score := !score + scores.[yy].[xx]
-            myincr counts (!score+4)
+                    score <- score + scores.[yy].[xx]
+            myincr counts (score+4)
 
     if counts.[0] <> 0 then
         yellowWins
