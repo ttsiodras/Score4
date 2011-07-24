@@ -104,8 +104,6 @@ let dropDisk (board:Cell array array) column color =
             y <- y - 1
     y
 
-exception FoundKillerMove of int*int
-
 let rec abMinimax maximizeOrMinimize color depth board =
     match depth with
     | 0 -> (None,scoreBoard board)
