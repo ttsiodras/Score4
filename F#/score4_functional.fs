@@ -9,8 +9,8 @@ let debug = ref true
 
 type Cell =
     | Orange = 1
-    | Yellow = 2
-    | Barren = 3
+    | Yellow = -1
+    | Barren = 0
 
 let rec any l =
     match l with
@@ -31,16 +31,12 @@ let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
 let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
 
 let scoreBoard (board:Cell array array) =
-    let rateCell = function
-        | Cell.Orange -> 1
-        | Cell.Yellow -> -1
-        | _ -> 0
     let counts = [| 0;0;0;0;0;0;0;0;0 |]
     let scores = Array.zeroCreate height
     for y=0 to height-1 do
         scores.[y] <- Array.zeroCreate width
         for x=0 to width-1 do
-            scores.[y].[x] <- rateCell board.[y].[x]
+            scores.[y].[x] <- int board.[y].[x]
 
     let inline myincr (arr:int array) idx =
         arr.[idx] <- arr.[idx] + 1
