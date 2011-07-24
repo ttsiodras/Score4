@@ -20,9 +20,9 @@ let rec any l =
 
 let otherColor color = 
     match color with
-        | Orange -> Yellow
-        | Yellow -> Orange
-        | _      -> Barren
+        | Cell.Orange -> Cell.Yellow
+        | Cell.Yellow -> Cell.Orange
+        | _      -> Cell.Barren
 
 (* diagonal, down-right *)
 let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
@@ -98,7 +98,7 @@ let dropDisk (board:Cell array array) column color =
     let searching = ref true
     for y=height-1 downto 0 do
         newBoard.[y] <- Array.copy board.[y]
-        if !searching && newBoard.[y].[column] = Barren then
+        if !searching && newBoard.[y].[column] = Cell.Barren then
             searching := false
             newBoard.[y].[column] <- color
     newBoard
@@ -108,7 +108,7 @@ let rec abMinimax maximizeOrMinimize color depth board =
     | 0 -> (None,scoreBoard board)
     | _ ->
         let validMoves =
-            [0 .. (width-1)] |> List.filter (fun move -> board.[0].[move] = Barren)
+            [0 .. (width-1)] |> List.filter (fun move -> board.[0].[move] = Cell.Barren)
         match validMoves with
         | [] -> (None,scoreBoard board)
         | _  ->
@@ -150,11 +150,11 @@ let loadBoard args =
             let orange = Printf.sprintf "o%d%d" y x
             let yellow = Printf.sprintf "y%d%d" y x
             if inArgs orange args then
-                board.[y].[x] <- Orange
+                board.[y].[x] <- Cell.Orange
             else if inArgs yellow args then
-                board.[y].[x] <- Yellow
+                board.[y].[x] <- Cell.Yellow
             else
-                board.[y].[x] <- Barren
+                board.[y].[x] <- Cell.Barren
         done
     done ;
     board
@@ -171,7 +171,7 @@ let main (args:string[]) =
         printf "You win"
         -1
     else
-        let mv,score = abMinimax true Orange maxDepth board
+        let mv,score = abMinimax true Cell.Orange maxDepth board
         let msgWithColumnToPlaceOrange = 
             match mv with
             | Some column -> printfn "%A" column
