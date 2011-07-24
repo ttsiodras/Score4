@@ -18,12 +18,6 @@ let rec any l =
     | true::xs  -> true
     | false::xs -> any xs
 
-(* diagonal, down-right *)
-let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
-
-(* diagonal, up-right   *)
-let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
-
 let scoreBoard (board:Cell array array) =
     let counts = [| 0;0;0;0;0;0;0;0;0 |]
     let scores = Array.zeroCreate height
@@ -56,11 +50,9 @@ let scoreBoard (board:Cell array array) =
         for x=0 to width-4 do
             let mutable score = 0 in
             for idx=0 to 3 do
-                match negativeSlope.[idx] with
-                | (yofs,xofs) ->
-                    let yy = y+yofs in
-                    let xx = x+xofs in
-                    score <- score + scores.[yy].[xx]
+                let yy = y+idx in
+                let xx = x+idx in
+                score <- score + scores.[yy].[xx]
             myincr counts (score+4)
 
     (* up-right (and down-left) diagonals *)
@@ -68,11 +60,9 @@ let scoreBoard (board:Cell array array) =
         for x=0 to width-4 do
             let mutable score = 0 in
             for idx=0 to 3 do
-                match positiveSlope.[idx] with
-                | (yofs,xofs) ->
-                    let yy = y+yofs in
-                    let xx = x+xofs in
-                    score <- score + scores.[yy].[xx]
+                let yy = y-idx in
+                let xx = x+idx in
+                score <- score + scores.[yy].[xx]
             myincr counts (score+4)
 
     if counts.[0] <> 0 then
