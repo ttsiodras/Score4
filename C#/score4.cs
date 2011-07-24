@@ -15,7 +15,7 @@ namespace score4
 
         public enum Mycell {
             Orange=1,
-            Yellow=2,
+            Yellow=-1,
             Barren=0
         };
 
@@ -32,64 +32,32 @@ namespace score4
             }
         };
 
-        // diagonal offsets, down-right
-        static int[][] negativeSlope = new int[4][] {
-            new int[2]{ 0, 0 },
-            new int[2]{ 1, 1 },
-            new int[2]{ 2, 2 },
-            new int[2]{ 3, 3 }
-        };
-
-        // diagonal offsets, up-right
-        static int[][] positiveSlope = new int[4][] {
-            new int [2] {  0, 0 },
-            new int [2] { -1, 1 },
-            new int [2] { -2, 2 },
-            new int [2] { -3, 3 }
-        };
-
-        // Jagged array, made static to avoid re-initializing on every ScoreBoard call
-        static int[][] scores = new int[height][] {
-                new int[width], new int[width], new int[width],
-                new int[width], new int[width], new int[width]
-            };
-
         public static int ScoreBoard(Board board)
         {
             int[] counters = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                    switch (board._slots[y][x])
-                    {
-                        case Mycell.Orange:
-                            scores[y][x] = 1; break;
-                        case Mycell.Yellow:
-                            scores[y][x] = -1; break;
-                        case Mycell.Barren:
-                            scores[y][x] = 0; break;
-                    }
+	    var scores = board._slots;
 
             // Horizontal spans
             for (int y = 0; y < height; y++)
             {
-                int score = scores[y][0] + scores[y][1] + scores[y][2];
+                int score = (int) scores[y][0] + (int) scores[y][1] + (int) scores[y][2];
                 for (int x = 3; x < width; x++)
                 {
-                    score += scores[y][x];
+                    score += (int) scores[y][x];
                     counters[score + 4]++;
-                    score -= scores[y][x - 3];
+                    score -= (int) scores[y][x - 3];
                 }
             }
             // Vertical spans
             for (int x = 0; x < width; x++)
             {
-                int score = scores[0][x] + scores[1][x] + scores[2][x];
+                int score = (int) scores[0][x] + (int) scores[1][x] + (int) scores[2][x];
                 for (int y = 3; y < height; y++)
                 {
-                    score += scores[y][x];
+                    score += (int) scores[y][x];
                     counters[score + 4]++;
-                    score -= scores[y - 3][x];
+                    score -= (int) scores[y - 3][x];
                 }
             }
             // Down-right (and up-left) diagonals
@@ -98,11 +66,11 @@ namespace score4
                 for (int x = 0; x < width - 3; x++)
                 {
                     int score = 0;
-                    foreach (var cellOffset in negativeSlope)
+                    for (int ofs=0; ofs<4; ofs++)
                     {
-                        int yy = y + cellOffset[0];
-                        int xx = x + cellOffset[1];
-                        score += scores[yy][xx];
+                        int yy = y + ofs;
+                        int xx = x + ofs;
+                        score += (int) scores[yy][xx];
                     }
                     counters[score + 4]++;
                 }
@@ -113,11 +81,11 @@ namespace score4
                 for (int x = 0; x < width - 3; x++)
                 {
                     int score = 0;
-                    foreach (var cellOfset in positiveSlope)
+                    for (int ofs=0; ofs<4; ofs++)
                     {
-                        int yy = y + cellOfset[0];
-                        int xx = x + cellOfset[1];
-                        score += scores[yy][xx];
+                        int yy = y - ofs;
+                        int xx = x + ofs;
+                        score += (int) scores[yy][xx];
                     }
                     counters[score + 4]++;
                 }
