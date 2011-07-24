@@ -18,8 +18,10 @@ let rec any l =
     | true::xs  -> true
     | false::xs -> any xs
 
+let counts = Array.create 9 0
+
 let scoreBoard (board:Cell array array) =
-    let counts = [| 0;0;0;0;0;0;0;0;0 |]
+    Array.fill counts 0 9 0
     let scores = Array.zeroCreate height
     for y=0 to height-1 do
         scores.[y] <- Array.zeroCreate width
