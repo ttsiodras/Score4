@@ -41,7 +41,7 @@
 <h2>Minimax in Javascript - run browser, run!</h2>
 A couple of weeks ago I invited people from <a href="http://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=2750894">Hacker News</a> to have a look at my implementation <a href="score4.html">of the AI Minimax algorithm</a>, which I used to play the <a href="http://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a> game. 
 <p>
-I wrote the code in both functional (OCaml/F#) and imperative (C#/C++) styles, and got different <a href="score4.html#lessons">speed results</a> from each one of them. Naturally, the C/C++ was the fastest one - by far: more than 5 times faster that the next best performer (OCaml). People from Reddit and Hacker News joined in, with implementations in Python, Java, Go and D(!). I placed all the code on <a href="https://github.com/ttsiodras/Score4">Github</a>, so it is easy to compare the various implementations and see what's happening.
+I wrote the code in both functional (OCaml/F#) and imperative (C#/C++) styles, and got different <a href="score4.html#lessons">speed results</a> from each one of them. Naturally, the C/C++ was the fastest one - by far: more than 5 times faster that the next best performer (OCaml). People from Reddit and Hacker News joined in, with implementations in Python, Java, Go, Haskell and D(!). I placed all the code on <a href="https://github.com/ttsiodras/Score4">Github</a>, so it is easy to compare the various implementations and see what's happening.
 <p>
 And today, the thought occured to me: <em>what about Javascript, the language of the Web?</em>
 <p>
@@ -227,6 +227,10 @@ function myOnClick(evt)
     var column = getCursorColumn(evt);
     dropDisk(column, -1);
     DrawBoard();
+    if (gameOver) {
+	document.getElementById("info").innerHTML = "GAME OVER";
+        return;
+    }
     document.getElementById("info").innerHTML = "Thinking, please wait...";
     setTimeout("playMove()", 100);
 }
