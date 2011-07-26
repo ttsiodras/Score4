@@ -1,0 +1,352 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<title>Porting Score4 to Javascript: The Browser Wars</title>
+</head>
+<body>
+    <div class="paper">
+    <table class="main" summary="" style="height:100%; width:100%;" cellspacing="0" rules="none" cellpadding="0" border="0">
+	<tr style="height: 3em;" valign="top">
+	    <td class="grey" valign="top">&nbsp;</td>
+	    <td class="ls" valign="top"></td>
+	    <td colspan="3" style="background-color: #FFFFFF;">
+	    <div id="heading">
+	    <h1>Porting Score4 to Javascript: The Browser Wars</h1>
+	    </div>
+	    </td>
+	    <td class="rs" valign="top"></td>
+	    <td class="grey" valign="top">&nbsp;<p>&nbsp;</td>
+	</tr>
+	<tr valign="top">
+	    <td class="grey" valign="top">&nbsp;</td>
+	    <td class="ls" valign="top"></td>
+	    <td class="whiteborder">&nbsp;</td>
+	    <td class="main" valign="top" style="background-color:#FFFFFF; width:80%;">
+<p><em>(July 2011)</em>
+<h2>A Javascript port of my Score4 AI engine</h2>
+<table border="1" frame="box" cellpadding="10" summary="for TL;DR people" bgcolor="#80DD80">
+<tr><td><b>For the TL;DR crowd:</b> A couple of weeks ago I implemented <a href="score4.html">the AI Minimax algorithm</a>, in order to play a game called <a href="http://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a>. Below you will find my Javascript port of that code: just click with the mouse on any column you wish, thus dropping green chips in the board. The goal is to form a line of four green ones - the computer will be trying to form a line of 4 red ones.</td></tr></table>
+&nbsp;<br>
+    <div align="center">
+        <canvas id="board" width="567" height="487" style="border:1px solid #c3c3c3; position:relative">
+        Your browser does not support the canvas element... Use Firefox or GoogleChrome or Opera.
+        </canvas>
+	<p id="info"></p>
+        <button id="reset" type="button" onClick="reset();"><b>Reset</b></button> to restart the game...
+    </div>
+<h2>Minimax in Javascript - run browser, run!</h2>
+A couple of weeks ago I invited people from <a href="http://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=2750894">Hacker News</a> to have a look at my implementation <a href="score4.html">of the AI Minimax algorithm</a>, which I used to play the <a href="http://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a> game. 
+<p>
+I wrote the code in both functional (OCaml/F#) and imperative (C#/C++) styles, and got different <a href="score4.html#lessons">speed results</a> from each one of them. Naturally, the C/C++ was the fastest one - by far: more than 5 times faster that the next best performer (OCaml). People from Reddit and Hacker News joined in, with implementations in Python, Java, Go and D(!). I placed all the code on <a href="https://github.com/ttsiodras/Score4">Github</a>, so it is easy to compare the various implementations and see what's happening.
+<p>
+And today, the thought occured to me: <em>what about Javascript, the language of the Web?</em>
+<p>
+At first I was relunctant; after all, if compiled languages need 5 seconds to make a move, wouldn't Javascript take longer? Thus making the whole effort futile?
+<p>
+Turns out I was wrong: The Javascript engines in modern browsers are *amazing*, to say the least. The JIT-compilation makes Javascript code run almost at the same speed as compiled languages!
+<p>
+It took me 2 hours to do the porting (most of which was spent reading the canvas APIs). Then, using my trusty Phenom II/3GHz at work, I tested it with the 5 most popular browsers. The Minimax engine (which you can test yourself above, just click on the middle column) - reports how much time it takes to make a move. And without further ado, these are the results:
+<center>
+<table summary="browser speed" border="0" cellspacing="0" cellpadding="5">
+<tr bgcolor="#DBDBDB"><td>Google Chrome 12.0.742.122</td><td>2.147 seconds</td></tr>
+<tr bgcolor="#EBEBEB"><td>Internet Explorer 9.0.8112.16421&nbsp;&nbsp;</td><td>4.007 seconds</td></tr>
+<tr bgcolor="#DBDBDB"><td>Safari 5.1 (7534.50)</td><td>4.754 seconds</td></tr>
+<tr bgcolor="#EBEBEB"><td>Opera 11.50 (build 1074)</td><td>5.016 seconds</td></tr>
+<tr bgcolor="#DBDBDB"><td>Firefox 5.0.1</td><td>7.328 seconds</td></tr>
+</table>
+</center>
+<br>&nbsp;<br>
+To me... that was unexpected. OK, everybody knows that Chrome is REALLY fast - but I was under the impression that Firefox is very fast, too... I also knew that IE has improved a lot, but I didn't realize by how much!
+<p>
+Apparently, my code is a tough cookie :-) You can use "View/Source" to check it out - it is basically a line-by-line
+translation of the imperative style of the code. I based it on the <a href="https://github.com/ttsiodras/Score4/tree/master/C++">C/C++ version</a>, since (a) that was the fastest one, and (b) if you use imperative constructs, Javascript can "mirror" C quite well.
+<p>
+Perhaps it's the recursive calls of <tt>minimax</tt> that Firefox doesn't like - I don't know. But feel free to join the fight, and find ways to make the code run faster - the Javascript implementation (i.e this page!) is now part of my <a href="https://github.com/ttsiodras/Score4">GitHub repos</a> :-)
+<p>
+Enjoy!
+<script type="text/javascript">
+var c = document.getElementById("board");
+var ctx = c.getContext("2d");
+
+var width = 7;
+var height = 6;
+var orangeWins = 1000000;
+var yellowWins = -1000000;
+var state; // Mutable set in function reset()
+
+var widthW = parseInt(c.getAttribute("width"));
+var heightW = parseInt(c.getAttribute("height"));
+var platform = navigator.platform + "," + navigator.userAgent;
+var gameOver = false;
+
+var warning = true;
+
+function getCursorColumn(e) {
+    var x;
+    if (e.pageX || e.pageY) {
+        x = e.pageX - c.offsetLeft;
+    }
+    else {
+	if (warning) {
+	    window.alert("Unsupported browser (use one of Firefox/Chrome/IE9/Opera/Safari)");
+	    warning = false;
+	}
+	x = e.clientX + document.body.scrollLeft + 
+	    document.documentElement.scrollLeft - c.offsetLeft;
+    }
+    x /= 81;
+    return Math.floor(x);
+}
+
+function ScoreBoard()
+{
+    var counters = [0,0,0,0,0,0,0,0,0];
+
+    // Horizontal spans
+    for(var y=0; y<height; y++) {
+        var score = state[y][0] + state[y][1] + state[y][2];
+        for(var x=3; x<width; x++) {
+            score += state[y][x];
+            counters[score+4]++;
+            score -= state[y][x-3];
+        }
+    }
+    // Vertical spans
+    for(var x=0; x<width; x++) {
+        var score = state[0][x] + state[1][x] + state[2][x];
+        for(var y=3; y<height; y++) {
+            score += state[y][x];
+            counters[score+4]++;
+            score -= state[y-3][x];
+        }
+    }
+    // Down-right (and up-left) diagonals
+    for(var y=0; y<height-3; y++) {
+        for(var x=0; x<width-3; x++) {
+            var score = 0;
+            for(var idx=0; idx<4; idx++) {
+                score += state[y+idx][x+idx];
+            }
+            counters[score+4]++;
+        }
+    }
+    // up-right (and down-left) diagonals
+    for(var y=3; y<height; y++) {
+        for(var x=0; x<width-3; x++) {
+            var score = 0;
+            for(var idx=0; idx<4; idx++) {
+                score += state[y-idx][x+idx];
+            }
+            counters[score+4]++;
+        }
+    }
+    if (counters[0] != 0)
+        return yellowWins;
+    else if (counters[8] != 0)
+        return orangeWins;
+    else 
+        return counters[5] + 2*counters[6] + 5*counters[7] + 10*counters[8] - counters[3] - 2*counters[2] - 5*counters[1] - 10*counters[0];
+}
+
+function dropDisk(column, color)
+{
+    for(var row=5; row>=0; row--) {
+        if (state[row][column] == 0) {
+            state[row][column] = color;
+            return row;
+        }
+    }
+    return -1;
+}
+
+function minimax(maximizeOrMinimize, color, depth)
+{
+    if (0 == depth) {
+        return [-1, ScoreBoard()];
+    } else {
+        var bestScore=maximizeOrMinimize?-10000000:10000000;
+        var bestMove=-1;
+        for (var column=0; column<width; column++) {
+            if (state[0][column]!=0) continue;
+            var rowFilled = dropDisk(column, color);
+            if (rowFilled == -1)
+                continue;
+            var s = ScoreBoard();
+            if (s == (maximizeOrMinimize?orangeWins:yellowWins)) {
+                bestMove = column;
+                bestScore = s;
+                state[rowFilled][column] = 0;
+                break;
+            }
+            var result = minimax(!maximizeOrMinimize, color==1?-1:1, depth-1);
+            var scoreInner = result[1];
+            //if (depth == 7)
+            //    alert("Score for " + column + ": " + scoreInner);
+            state[rowFilled][column] = 0;
+            if (maximizeOrMinimize) {
+                if (scoreInner>=bestScore) {
+                    bestScore = scoreInner;
+                    bestMove = column;
+                } 
+            } else {
+                if (scoreInner<=bestScore) {
+                    bestScore = scoreInner;
+                    bestMove = column;
+                }
+            }
+        }
+        return [bestMove, bestScore];
+    }
+}
+
+function playMove()
+{
+    var startTime = new Date();
+    var result = minimax(true,1,7);
+    var endTime = new Date();
+    if (result[0] != -1)
+        dropDisk(result[0], 1);
+    DrawBoard();
+    if (gameOver) {
+	document.getElementById("info").innerHTML = "GAME OVER";
+    } else {
+	var duration = (endTime.getTime() - startTime.getTime())/1000.0;
+	duration = "CPU was thinking for " + duration + " seconds to play the last move.";
+	document.getElementById("info").innerHTML = duration;
+    }
+}
+
+function myOnClick(evt)
+{
+    if (gameOver)
+        return;
+    var column = getCursorColumn(evt);
+    dropDisk(column, -1);
+    DrawBoard();
+    document.getElementById("info").innerHTML = "Thinking, please wait...";
+    setTimeout("playMove()", 100);
+}
+c.addEventListener("click", myOnClick, false);
+
+steps = [
+   [ [0,0], [-1,1],  [-2,2],  [-3,3]  ],  // diagonal, up-right
+   [ [0,0], [0,1],   [0,2],   [0,3]   ],  // horizontal,right
+   [ [0,0], [1,1],   [2,2],   [3,3]   ],  // diagonal, down-right
+   [ [0,0], [1,0],   [2,0],   [3,0]   ]   // vertical, down
+]
+
+function inside(y,x) 
+{
+    return y>=0 && y<height && x>=0 && x<width;
+}
+
+function DrawBoard() 
+{
+    ctx.beginPath();
+    for (var y=0; y<7; y++) {
+        ctx.moveTo(0, y*81);
+        ctx.lineTo(7*81, y*81);
+        ctx.stroke();
+    }
+    for (var x=0; x<8; x++) {
+        ctx.moveTo(x*81,0);
+        ctx.lineTo(x*81, 6*81+1);
+        ctx.stroke();
+    }
+    ctx.closePath();
+
+    var statePrint = [[],[],[],[],[],[],[]]
+    for (var y=0; y<6; y++) {
+        statePrint[y] = state[y].slice(0)
+    }
+
+    for (var y=0; y<6; y++) {
+        for (var x=0; x<7; x++) {
+            for (var direction=0; direction<4; direction++) {
+                var score = 0;
+                for (var idx=0; idx<4; idx++) {
+                    yofs = steps[direction][idx][0];
+                    xofs = steps[direction][idx][1];
+                    if (inside(y+yofs,x+xofs)) {
+                        value = state[y+yofs][x+xofs]
+                        if (value==1 || value==-1)
+                            score += value;
+                    }
+                }
+                if (score==4 || score==-4) {
+                    for (var idx=0; idx<4; idx++) {
+                        yofs = steps[direction][idx][0];
+                        xofs = steps[direction][idx][1];
+                        if (inside(y+yofs,x+xofs))
+                            statePrint[y+yofs][x+xofs] = score;
+                    }
+                    gameOver = true;
+                }
+            }
+        }
+    }
+
+    for(var y=0; y<6; y++) {
+        for (var x=0; x<7; x++) {
+            cell = statePrint[y][x];
+            var color = "";
+            if      (cell == 1) color="#FF0000";
+            else if (cell ==-1) color="#00FF00";
+            else if (cell ==-4) color="#007F00";
+            else if (cell == 4) color="#7F0000";
+            center = (x*81+40, y*81+40);
+            if (cell != 0) {
+                ctx.beginPath();
+                ctx.fillStyle = "#000000";
+                ctx.arc(x*81+40, y*81+40, 35, 0, Math.PI*2, true);
+                ctx.fill();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.fillStyle = color;
+                ctx.arc(x*81+40, y*81+40, 33, 0, Math.PI*2, false);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
+}
+
+function reset()
+{
+    gameOver = false;
+    ctx.fillStyle = '#DFDFDF';
+    ctx.fillRect(0,0,widthW,heightW);
+    state = [
+        [ 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 1, 0, 0, 0 ]];
+    DrawBoard();
+    document.getElementById("info").innerHTML = "";
+}
+
+reset();
+
+</script>
+
+	    </td>
+	    <td class="whiteborder" valign="top"></td>
+	    <td class="rs" valign="top"></td>
+	    <td class="grey" valign="top">&nbsp;<p>&nbsp;</td>
+	</tr>
+    </table>
+<script src="urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-746316-1";
+urchinTracker();
+</script>
+</div>
+</body>
+</html>
