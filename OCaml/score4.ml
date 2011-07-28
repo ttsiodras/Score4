@@ -5,21 +5,32 @@ let orangeWins = 1000000
 let yellowWins = -orangeWins
 let debug = ref true
 
-type mycell =
-    | Orange
-    | Yellow
-    | Barren
+(* July 28, 2012:
+ *
+ * I deviated from the blog post now (if you want to, checkout
+ * earlier versions from GitHub to see the blog post version).
+ *
+ * Ocaml unfortunately doesn't support integer-based enums (like F#/C++).
+ * I therefore removed this...
+ *
+ * type mycell =
+ *     | Orange
+ *     | Yellow
+ *     | Barren
+ *
+ * ...and replaced it with direct usage of 1,0,-1
+ * (wherever Orange,Barren,Yellow were used)
+ *
+ * This provided a speedup of 60% - just as integer-enums did for F# -
+ * since there's no "mapping" required in scoreBoard anymore.
+ *)
 
 let ( |> ) x fn = fn x
 
 let inside y x =
     y>=0 && y<height && x>=0 && x<width
 
-let otherColor color =
-    match color with
-        | Orange -> Yellow
-        | Yellow -> Orange
-        | _      -> Barren
+let otherColor color = -color
 
 (* diagonal, down-right *)
 let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
@@ -28,37 +39,27 @@ let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
 let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
 
 let scoreBoard board =
-    let rateCell = function
-        | Orange -> 1
-        | Yellow -> -1
-        | Barren -> 0 in
     let counts = [| 0;0;0;0;0;0;0;0;0 |] in
-    let scores = Array.make_matrix height width 0 in
-    for y=0 to height-1 do
-        for x=0 to width-1 do
-            scores.(y).(x) <- rateCell board.(y).(x)
-        done
-    done ;
 
     let myincr arr idx = arr.(idx) <- arr.(idx) + 1 in
 
     (* Horizontal spans *)
     for y=0 to height-1 do
-	let score = ref (scores.(y).(0) + scores.(y).(1) + scores.(y).(2)) in
+	let score = ref (board.(y).(0) + board.(y).(1) + board.(y).(2)) in
 	for x=3 to width-1 do
-	    score := !score + scores.(y).(x);
+	    score := !score + board.(y).(x);
 	    myincr counts (!score+4) ;
-	    score := !score - scores.(y).(x-3)
+	    score := !score - board.(y).(x-3)
 	done
     done ;
 
     (* Vertical spans *)
     for x=0 to width-1 do
-	let score = ref (scores.(0).(x) + scores.(1).(x) + scores.(2).(x)) in
+	let score = ref (board.(0).(x) + board.(1).(x) + board.(2).(x)) in
 	for y=3 to height-1 do
-	    score := !score + scores.(y).(x);
+	    score := !score + board.(y).(x);
 	    myincr counts (!score+4);
-	    score := !score - scores.(y-3).(x);
+	    score := !score - board.(y-3).(x);
 	done
     done ;
 
@@ -67,11 +68,7 @@ let scoreBoard board =
 	for x=0 to width-4 do
 	    let score = ref 0 in
 	    for idx=0 to 3 do
-		match negativeSlope.(idx) with
-		| (yofs,xofs) ->
-		    let yy = y+yofs in
-		    let xx = x+xofs in
-		    score := !score + scores.(yy).(xx)
+                score := !score + board.(y+idx).(x+idx)
 	    done ;
 	    myincr counts (!score+4)
 	done
@@ -82,11 +79,7 @@ let scoreBoard board =
 	for x=0 to width-4 do
 	    let score = ref 0 in
 	    for idx=0 to 3 do
-		match positiveSlope.(idx) with
-		| (yofs,xofs) ->
-		    let yy = y+yofs in
-		    let xx = x+xofs in
-		    score := !score + scores.(yy).(xx)
+                score := !score + board.(y-idx).(x+idx)
 	    done ;
 	    myincr counts (!score+4)
 	done
@@ -105,7 +98,7 @@ exception NoMoreWork of int
 let dropDisk board column color =
     try begin
         for y=height-1 downto 0 do
-            if board.(y).(column) = Barren then begin
+            if board.(y).(column) = 0 then begin
                 board.(y).(column) <- color ;
                 raise (NoMoreWork y)
             end
@@ -125,16 +118,16 @@ let rec abMinimax maximizeOrMinimize color depth board =
             let bestMove = ref (-1) in 
             let killerTarget = match maximizeOrMinimize with true -> orangeWins | false -> yellowWins in
             for column=0 to width-1 do 
-                if board.(0).(column) = Barren then
+                if board.(0).(column) = 0 then
                 begin
                     let rowFilled = dropDisk board column color in
                     let s = scoreBoard board in
                     if s = killerTarget then begin
-                        board.(rowFilled).(column) <- Barren ;
+                        board.(rowFilled).(column) <- 0 ;
                         raise (FoundKillerMove (column,s))
                     end else match abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1) board with
                         | (moveInner,scoreInner) ->
-                            board.(rowFilled).(column) <- Barren ;
+                            board.(rowFilled).(column) <- 0 ;
                             if depth = maxDepth && !debug then
                                 Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column scoreInner ;
                             if maximizeOrMinimize then 
@@ -163,17 +156,17 @@ let inArgs args str =
     any(Array.to_list (Array.map (fun x -> (x = str)) args))
 
 let loadBoard args =
-    let board = Array.make_matrix height width Barren in
+    let board = Array.make_matrix height width 0 in
     for y=0 to height-1 do
         for x=0 to width-1 do
             let orange = Printf.sprintf "o%d%d" y x in
             let yellow = Printf.sprintf "y%d%d" y x in
             if inArgs args orange then
-                board.(y).(x) <- Orange
+                board.(y).(x) <- 1
             else if inArgs args yellow then
-                board.(y).(x) <- Yellow
+                board.(y).(x) <- -1
             else
-                board.(y).(x) <- Barren
+                board.(y).(x) <- 0
         done
     done ;
     board
@@ -191,7 +184,7 @@ let _ =
         Printf.printf "You win\n" ;
         (-1)
     end else
-        let mv,score = abMinimax true Orange maxDepth board in
+        let mv,score = abMinimax true 1 maxDepth board in
         match mv with
         | Some column -> Printf.printf "%d\n" column ; 0
         | _ -> failwith "No move possible"
