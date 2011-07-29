@@ -1,10 +1,15 @@
 open System.Collections.Generic
 
+[<Literal>]
 let width = 7
+[<Literal>]
 let height = 6
+[<Literal>]
 let maxDepth = 7
+[<Literal>]
 let orangeWins = 1000000
-let yellowWins = -orangeWins
+[<Literal>]
+let yellowWins = -1000000
 let mutable debug = true
 
 type Cell =
