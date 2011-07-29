@@ -119,15 +119,20 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     match abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board with
                     | (moveInner,scoreInner) ->
                         board.[rowFilled].[column] <- Cell.Barren
+                        (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+                        let shiftedScore =
+                            match scoreInner with
+                            | ORANGEWINS | YELLOWWINS -> scoreInner - depth*(int color)
+                            | _ -> scoreInner
                         if depth = MAXDEPTH && debug then
                             Printf.printf "Depth %d, placing on %d, Score:%d\n" depth column scoreInner ;
                         if maximizeOrMinimize then
-                            if scoreInner>= bestScore then
-                                bestScore <- scoreInner
+                            if shiftedScore >= bestScore then
+                                bestScore <- shiftedScore
                                 bestMove <- column
                         else
-                            if scoreInner<= bestScore then
-                                bestScore <- scoreInner
+                            if shiftedScore <= bestScore then
+                                bestScore <- shiftedScore
                                 bestMove <- column
         done ;
         (Some(bestMove),bestScore)

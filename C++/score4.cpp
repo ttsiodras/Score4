@@ -158,6 +158,9 @@ void abMinimax(bool maximizeOrMinimize, Mycell color, int depth, Board& board, i
 	    int moveInner, scoreInner;
 	    abMinimax(!maximizeOrMinimize, color==Orange?Yellow:Orange, depth-1, board, moveInner, scoreInner);
 	    board._slots[rowFilled][column] = Barren;
+	    /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
+	    if (scoreInner == orangeWins || scoreInner == yellowWins)
+		scoreInner -= depth * (int)color;
 	    if (depth == g_maxDepth && g_debug)
 		printf("Depth %d, placing on %d, score:%d\n", depth, column, scoreInner);
 	    if (maximizeOrMinimize) {

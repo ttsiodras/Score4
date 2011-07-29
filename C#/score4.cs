@@ -146,6 +146,9 @@ namespace score4
                     int moveInner, scoreInner;
                     abMinimax(!maximizeOrMinimize, color==Mycell.Orange?Mycell.Yellow:Mycell.Orange, depth-1, board, out moveInner, out scoreInner);
                     board._slots[rowFilled][column] = Mycell.Barren;
+                    /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
+                    if (scoreInner == orangeWins || scoreInner == yellowWins)
+                        scoreInner -= depth * (int)color;
                     if (depth == maxDepth && g_debug)
                         Console.WriteLine("Depth {0}, placing on {1}, score:{2}", depth, column, scoreInner);
                     if (maximizeOrMinimize) {

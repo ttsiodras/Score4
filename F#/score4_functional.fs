@@ -115,6 +115,13 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let bestScores = 
                     validBoards |>
                     List.map (abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1)) |>
+                    (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+                    List.map (fun (bmove,bscore) ->
+                        let shiftedScore =
+                            match bscore with
+                            | ORANGEWINS | YELLOWWINS -> bscore - depth*(int color)
+                            | _ -> bscore
+                        (bmove,shiftedScore)) |>
 (* Use this to take advantage of SMP:
                     Array.ofList |>
                     (if depth>=7 then Array.Parallel.map else Array.map) (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>

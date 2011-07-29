@@ -148,6 +148,13 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let validBoards = validMovesAndBoards |> List.map snd in
                 let bestScores = validBoards |>
                     List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
+                    (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+                    List.map (fun (bmove,bscore) ->
+                        let shiftedScore =
+                            match bscore with
+                            | 1000000 | -1000000 -> bscore - depth*color
+                            | _ -> bscore in
+                        (bmove,shiftedScore)) |>
                     List.map snd in
                 let allData = myzip validMoves bestScores in
                 if !debug && depth = maxDepth then

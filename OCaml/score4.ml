@@ -128,15 +128,20 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     end else match abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1) board with
                         | (moveInner,scoreInner) ->
                             board.(rowFilled).(column) <- 0 ;
+			    (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+			    let shiftedScore =
+				match scoreInner with
+				| 1000000 | -1000000 -> scoreInner - depth*color
+				| _ -> scoreInner in
                             if depth = maxDepth && !debug then
-                                Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column scoreInner ;
+                                Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column shiftedScore ;
                             if maximizeOrMinimize then 
                             begin
-                                if scoreInner>= !bestScore then begin bestScore := scoreInner ; bestMove := column end
+                                if shiftedScore>= !bestScore then begin bestScore := shiftedScore ; bestMove := column end
                             end
                             else
                             begin
-                                if scoreInner<= !bestScore then begin bestScore := scoreInner ; bestMove := column end 
+                                if shiftedScore<= !bestScore then begin bestScore := shiftedScore ; bestMove := column end 
                             end
                     end
             done ;
