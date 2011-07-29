@@ -36,28 +36,26 @@ namespace score4
         {
             int[] counters = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	    var scores = board._slots;
-
             // Horizontal spans
             for (int y = 0; y < height; y++)
             {
-                int score = (int) scores[y][0] + (int) scores[y][1] + (int) scores[y][2];
+                int score = (int) board._slots[y][0] + (int) board._slots[y][1] + (int) board._slots[y][2];
                 for (int x = 3; x < width; x++)
                 {
-                    score += (int) scores[y][x];
+                    score += (int) board._slots[y][x];
                     counters[score + 4]++;
-                    score -= (int) scores[y][x - 3];
+                    score -= (int) board._slots[y][x - 3];
                 }
             }
             // Vertical spans
             for (int x = 0; x < width; x++)
             {
-                int score = (int) scores[0][x] + (int) scores[1][x] + (int) scores[2][x];
+                int score = (int) board._slots[0][x] + (int) board._slots[1][x] + (int) board._slots[2][x];
                 for (int y = 3; y < height; y++)
                 {
-                    score += (int) scores[y][x];
+                    score += (int) board._slots[y][x];
                     counters[score + 4]++;
-                    score -= (int) scores[y - 3][x];
+                    score -= (int) board._slots[y - 3][x];
                 }
             }
             // Down-right (and up-left) diagonals
@@ -70,7 +68,7 @@ namespace score4
                     {
                         int yy = y + ofs;
                         int xx = x + ofs;
-                        score += (int) scores[yy][xx];
+                        score += (int) board._slots[yy][xx];
                     }
                     counters[score + 4]++;
                 }
@@ -85,7 +83,7 @@ namespace score4
                     {
                         int yy = y - ofs;
                         int xx = x + ofs;
-                        score += (int) scores[yy][xx];
+                        score += (int) board._slots[yy][xx];
                     }
                     counters[score + 4]++;
                 }
