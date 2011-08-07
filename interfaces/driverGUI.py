@@ -154,6 +154,7 @@ while True:
 		else:
 		    print "Cmd string was:"
 		    print "engine.exe %s -level %s" % (s,level)
+		    print "Got response:", resp
 		gameOver = PrintAndCheckState(window)
 		if gameOver:
 		    FlashGameOver()
