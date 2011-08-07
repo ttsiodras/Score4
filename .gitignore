@@ -1,9 +1,5 @@
-C++/bin.debug/
-C++/bin.release/
-C++/deps.debug/
-C++/deps.release/
-C++/objs.debug/
-C++/objs.release/
+C++/score4
+C++/score4_extreme
 OCaml/score4.bin
 OCaml/score4.cmi
 OCaml/score4.cmx
