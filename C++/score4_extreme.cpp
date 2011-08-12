@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     else {
         int move, score;
         abMinimax(true,Orange,g_maxDepth,board,move,score);
-        if (g_debug) printf("Cached:%d Processed::%d\n", hits, losses);
+        if (g_debug) printf("Cached:%d Processed:%d\n", hits, losses);
         if (move != -1) {
             printf("%d\n",move);
             dropDisk(board, move, Orange);
