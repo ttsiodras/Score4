@@ -179,47 +179,47 @@ Board loadBoard(int argc, char *argv[])
 
 void abMinimax(bool maximizeOrMinimize, char color, int depth, Board& board, int& move, int& score)
 {
-    if (0==depth) {
-        move = -1;
-        score = ScoreBoard(board);
-    } else {
-        int bestScore=maximizeOrMinimize?-10000000:10000000;
-        int bestMove=-1;
-        for (int column=0; column<width; column++) {
-            if (GetCell(board._slots,0,column)!=Barren) continue;
-            int rowFilled = dropDisk(board, column, color);
-            if (rowFilled == -1)
-                continue;
-            int s = ScoreBoard(board);
-            if (s == (maximizeOrMinimize?orangeWins:yellowWins)) {
-                bestMove = column;
-                bestScore = s;
-                SetCell(board._slots,rowFilled,column,Barren);
-                break;
-            }
-            int moveInner, scoreInner;
-            abMinimax(!maximizeOrMinimize, color==Orange?Yellow:Orange, depth-1, board, moveInner, scoreInner);
-            SetCell(board._slots,rowFilled,column, Barren);
-            /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
-            if (scoreInner == orangeWins || scoreInner == yellowWins)
-                scoreInner -= depth * (int)color;
-            if (depth == g_maxDepth && g_debug)
-                printf("Depth %d, placing on %d, score:%d\n", depth, column, scoreInner);
-            if (maximizeOrMinimize) {
-                if (scoreInner>=bestScore) {
-                    bestScore = scoreInner;
-                    bestMove = column;
-                }
-            } else {
-                if (scoreInner<=bestScore) {
-                    bestScore = scoreInner;
-                    bestMove = column;
-                }
-            }
-        }
-        move = bestMove;
-        score = bestScore;
+    int bestScore=maximizeOrMinimize?-10000000:10000000;
+    int bestMove=-1;
+    for (int column=0; column<width; column++) {
+	if (GetCell(board._slots,0,column)!=Barren) continue;
+	int rowFilled = dropDisk(board, column, color);
+	if (rowFilled == -1)
+	    continue;
+	int s = ScoreBoard(board);
+	if (s == (maximizeOrMinimize?orangeWins:yellowWins)) {
+	    bestMove = column;
+	    bestScore = s;
+	    SetCell(board._slots,rowFilled,column,Barren);
+	    break;
+	}
+	int moveInner, scoreInner;
+	if (depth>1)
+	    abMinimax(!maximizeOrMinimize, color==Orange?Yellow:Orange, depth-1, board, moveInner, scoreInner);
+	else {
+	    moveInner = -1;
+	    scoreInner = s;
+	}
+	SetCell(board._slots,rowFilled,column, Barren);
+	/* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
+	if (scoreInner == orangeWins || scoreInner == yellowWins)
+	    scoreInner -= depth * (int)color;
+	if (depth == g_maxDepth && g_debug)
+	    printf("Depth %d, placing on %d, score:%d\n", depth, column, scoreInner);
+	if (maximizeOrMinimize) {
+	    if (scoreInner>=bestScore) {
+		bestScore = scoreInner;
+		bestMove = column;
+	    }
+	} else {
+	    if (scoreInner<=bestScore) {
+		bestScore = scoreInner;
+		bestMove = column;
+	    }
+	}
     }
+    move = bestMove;
+    score = bestScore;
 }
 
 int main(int argc, char *argv[])
