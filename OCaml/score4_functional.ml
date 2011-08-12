@@ -129,24 +129,24 @@ let dropDisk board column color =
     end with NoMoreWork -> arrNew
 
 let rec abMinimax maximizeOrMinimize color depth board =
-    match depth with
-    | 0 -> (None,scoreBoard board)
-    | _ ->
-        let validMoves =
-	    0--(width-1) |> List.filter (fun column -> board.(0).(column) = 0) in
-        match validMoves with
-        | [] -> (None,scoreBoard board)
-        | _  ->
-            let validMovesAndBoards = validMoves |> List.map (fun column -> (column,dropDisk board column color)) in
-            let killerMoves =
-                let targetScore = if maximizeOrMinimize then orangeWins else yellowWins in
-                validMovesAndBoards |> List.map (fun (column,board) -> (column,scoreBoard board)) |>
-                List.filter (fun (_,score) -> score = targetScore) in
-            match killerMoves with
-            | (killerMove,killerScore)::rest -> (Some(killerMove), killerScore)
-            | [] ->
-                let validBoards = validMovesAndBoards |> List.map snd in
-                let bestScores = validBoards |>
+    let validMoves =
+        0--(width-1) |> List.filter (fun column -> board.(0).(column) = 0) in
+    match validMoves with
+    | [] -> (None,scoreBoard board)
+    | _  ->
+        let movesAndBoards = validMoves |> List.map (fun column -> (column,dropDisk board column color)) in
+        let movesAndScores = movesAndBoards |>  List.map (fun (column,board) -> (column,scoreBoard board)) in
+        let killerMoves =
+            let targetScore = if maximizeOrMinimize then orangeWins else yellowWins in
+            movesAndScores |> List.filter (fun (_,score) -> score=targetScore) in
+        match killerMoves with
+        | (killerMove,killerScore)::rest -> (Some(killerMove), killerScore)
+        | [] ->
+            let bestScores =
+                match depth with
+                | 1 -> movesAndScores |> List.map snd
+                | _ ->
+                    movesAndBoards |> List.map snd |>
                     List.map (abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1)) |>
                     (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
                     List.map (fun (bmove,bscore) ->
@@ -154,17 +154,16 @@ let rec abMinimax maximizeOrMinimize color depth board =
                             match bscore with
                             | 1000000 | -1000000 -> bscore - depth*color
                             | _ -> bscore in
-                        (bmove,shiftedScore)) |>
-                    List.map snd in
-                let allData = myzip validMoves bestScores in
-                if !debug && depth = maxDepth then
-                    List.iter (fun (column,score) ->
-                        Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column score) allData ;
-		let best  (_,s as l) (_,s' as r) = if s > s' then l else r
-		and worst (_,s as l) (_,s' as r) = if s < s' then l else r in
-		let bestMove,bestScore =
-		    List.fold_left (if maximizeOrMinimize then best else worst) (List.hd allData) (List.tl allData) in
-                (Some(bestMove),bestScore)
+                        shiftedScore) in
+            let allData = myzip validMoves bestScores in
+            if !debug && depth = maxDepth then
+                List.iter (fun (column,score) ->
+                    Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column score) allData ;
+            let best  (_,s as l) (_,s' as r) = if s > s' then l else r
+            and worst (_,s as l) (_,s' as r) = if s < s' then l else r in
+            let bestMove,bestScore =
+                List.fold_left (if maximizeOrMinimize then best else worst) (List.hd allData) (List.tl allData) in
+            (Some(bestMove),bestScore)
 
 (* let any = List.fold_left (||) false
  * ..is slower than ... *)
