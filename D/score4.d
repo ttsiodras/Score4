@@ -1,14 +1,9 @@
-import core.stdc.stdio, std.conv, std.typetuple, std.typecons;
+// Compile with -debug too to see the debug printout.
 
-enum int WIDTH = 7;
-enum int HEIGHT = 6;
-enum int ORANGE_WINS = 1_000_000;
-enum int YELLOW_WINS = -ORANGE_WINS;
+import std.stdio, std.conv, std.typetuple, std.typecons, std.ascii;
 
-int g_maxDepth = 7;
-bool g_debug = false;
-
-// manual optimization for missing DMD loop unwinding
+// Manual optimization for missing DMD compiler loop unwinding.
+// Probably not needed with LDC and GDC compilers.
 template Range(int stop) {
     static if (stop <= 0)
         alias TypeTuple!() Range;
@@ -16,132 +11,169 @@ template Range(int stop) {
         alias TypeTuple!(Range!(stop-1), stop-1) Range;
 }
 
-enum MyCell : int {
-    Barren = 0,
-    Orange = 1,
-    Yellow = -1
-}
+enum int noMove = -1;
 
-alias MyCell[WIDTH][HEIGHT] Board;
 
-int scoreBoard(const ref Board board) nothrow {
-    int[9] counters;
+struct Score4 {
+    enum size_t width = 7;
+    enum size_t height = 6;
+    static assert(width >= 4 && height >= 4);
+    enum int orangeWins = 1_000_000;
+    enum int yellowWins = -orangeWins;
+    enum int boardIsFullError = -1;
+    enum int noMovePossible = -1;
 
-    // Horizontal spans
-    foreach (y; 0 .. HEIGHT) {
-        int score = board[y][0] + board[y][1] + board[y][2];
-        foreach (x; 3 .. WIDTH) {
-            score += board[y][x];
-            counters[score + 4]++;
-            score -= board[y][x - 3];
-        }
-    }
+    enum Cell : int { Empty = 0, Orange = 1, Yellow = -1 }
 
-    // Vertical spans
-    foreach (x; 0 .. WIDTH) {
-        int score = board[0][x] + board[1][x] + board[2][x];
-        foreach (y; 3 .. HEIGHT) {
-            score += board[y][x];
-            counters[score + 4]++;
-            score -= board[y - 3][x];
-        }
-    }
+    const int maxDepth;
 
-    // Down-right (and up-left) diagonals
-    foreach (y; 0 .. HEIGHT - 3) {
-        foreach (x; Range!(WIDTH - 3)) {
-            int score = 0;
-            foreach (idx; Range!4) {
-                const int yy = y + idx;
-                const int xx = x + idx;
-                score += board[yy][xx];
+    // One padding Cell in rows gives a bit higher performance.
+    Cell[width][height] board;
+
+
+    this(in string[] args) nothrow {
+        static assert(width <= 9 && height <= 9,
+            "One digit isn't enough to represent row or column.");
+        maxDepth = 7;
+
+        // Load the board.
+        foreach (i, arg; args[1 .. $]) {
+            if (arg.length == 3 && (arg[0] == 'o' || arg[0] == 'y') &&
+                isDigit(arg[1]) && isDigit(arg[2]))
+                board[arg[1] - '0'][arg[2] - '0'] =
+                    (arg[0] == 'o') ? Cell.Orange : Cell.Yellow;
+            else if (arg == "-level" && i < (args.length - 2)) {
+                try
+                    maxDepth = to!int(args[i + 2]); // not yet pure @safe
+                catch (Exception e) // ConvException
+                    assert(0, "Invalid level value.");
+            } else {
+                puts("Invalid command line argument");
+                puts("(This program doesn't support the -debug");
+                puts("command line argument at run-time).");
+                assert(0);
             }
-            counters[score + 4]++;
         }
     }
 
-    // up-right (and down-left) diagonals
-    foreach (y; 3 .. HEIGHT) {
-        foreach (x; Range!(WIDTH - 3)) {
-            int score = 0;
-            foreach (idx; Range!4) {
-                const int yy = y - idx;
-                const int xx = x + idx;
-                score += board[yy][xx];
+
+    /// Compute the score of the current board.
+    int computeBoardScore() const pure nothrow {
+        int[9] counters; // index in [-4, 4]
+
+        // Horizontal spans.
+        foreach (y; 0 .. height) {
+            int score = board[y][0] + board[y][1] + board[y][2];
+            foreach (x; 3 .. width) {
+                score += board[y][x];
+                counters[score + 4]++;
+                score -= board[y][x - 3];
             }
-            counters[score + 4]++;
         }
+
+        // Vertical spans.
+        foreach (x; 0 .. width) {
+            int score = board[0][x] + board[1][x] + board[2][x];
+            foreach (y; 3 .. height) {
+                score += board[y][x];
+                counters[score + 4]++;
+                score -= board[y - 3][x];
+            }
+        }
+
+        // Down-right (and up-left) diagonals.
+        foreach (y; 0 .. height - 3) {
+            foreach (x; Range!(width - 3)) {
+                int score = 0;
+                foreach (i; Range!4)
+                    score += board[y + i][x + i];
+                counters[score + 4]++;
+            }
+        }
+
+        // Up-right (and down-left) diagonals.
+        foreach (y; 3 .. height) {
+            foreach (x; Range!(width - 3)) {
+                int score = 0;
+                foreach (i; Range!4)
+                    score += board[y - i][x + i];
+                counters[score + 4]++;
+            }
+        }
+
+        if (counters[0] != 0)
+            return yellowWins;
+        else if (counters[8] != 0)
+            return orangeWins;
+        else return      counters[5] + 2  * counters[6] + 5 * counters[7] +
+                    10 * counters[8] -      counters[3] - 2 * counters[2] -
+                     5 * counters[1] - 10 * counters[0];
     }
 
-    if (counters[0] != 0)
-        return YELLOW_WINS;
-    else if (counters[8] != 0)
-        return ORANGE_WINS;
-    else return counters[5] + 2 * counters[6] + 5 * counters[7] +
-                10 * counters[8] - counters[3] - 2 * counters[2] -
-                5 * counters[1] - 10 * counters[0];
-}
 
-int dropDisk(ref Board board, in int column, in MyCell color) pure nothrow {
-    foreach_reverse (y; 0 .. HEIGHT)
-        if (board[y][column] == MyCell.Barren) {
-            board[y][column] = color;
-            return y;
-        }
-    return -1;
-}
-
-Board loadBoard(in string[] args) {
-    Board newBoard;
-
-    foreach (i, arg; args[1 .. $]) {
-        if (arg[0] == 'o' || arg[0] == 'y')
-            newBoard[arg[1] - '0'][arg[2] - '0'] =
-                (arg[0] == 'o') ? MyCell.Orange : MyCell.Yellow;
-        else if (arg == "-debug")
-            g_debug = true;
-        else if (arg == "-level" && i < (args.length - 2))
-            g_maxDepth = to!int(args[i + 2]);
+    /// Add (drop) a disk to a column of the board.
+    int dropDisk(in int column, in Cell color) pure nothrow
+    in {
+        assert(column >= 0 && column < width);
+    } out(y) {
+        assert(y == boardIsFullError || (y >= 0 && y < height));
+    } body {
+        foreach_reverse (y; 0 .. height)
+            if (board[y][column] == Cell.Empty) {
+                board[y][column] = color;
+                return y;
+            }
+        return boardIsFullError;
     }
 
-    return newBoard;
-}
 
-Tuple!(int,"move", int,"score") abMinimax(in bool maximizeOrMinimize, in MyCell color,
-                                          in int depth, ref Board board) {
-    if (depth == 0) {
-        return typeof(return)(-1, scoreBoard(board));
-    } else {
-        int bestScore = maximizeOrMinimize ? -10_000_000 : 10_000_000;
-        int bestMove = -1;
-        foreach (column; Range!WIDTH) {
-            if (board[0][column] != MyCell.Barren)
+    Tuple!(int,"move", int,"score") abMinimax(in bool maximizeOrMinimize,
+                                              in Cell color,
+                                              in int depth) pure nothrow {
+        if (depth <= 0)
+            return typeof(return)(noMovePossible, computeBoardScore());
+
+        int bestMove = noMovePossible;
+        int bestScore = maximizeOrMinimize ? int.min : int.max;
+
+        foreach (column; Range!width) {
+            int rowFilled = dropDisk(column, color);
+            if (rowFilled == boardIsFullError)
                 continue;
-            int rowFilled = dropDisk(board, column, color);
-            if (rowFilled == -1)
-                continue;
-            int s = scoreBoard(board);
-            if (s == (maximizeOrMinimize ? ORANGE_WINS : YELLOW_WINS)) {
+            int score = computeBoardScore();
+
+            if (score == (maximizeOrMinimize ? orangeWins : yellowWins)) {
                 bestMove = column;
-                bestScore = s;
-                board[rowFilled][column] = MyCell.Barren;
+                bestScore = score;
+                board[rowFilled][column] = Cell.Empty;
                 break;
             }
 
-            auto res = abMinimax(!maximizeOrMinimize,
-                                 color == MyCell.Orange ? MyCell.Yellow : MyCell.Orange,
-                                 depth - 1, board);
-            board[rowFilled][column] = MyCell.Barren;
-            if (depth == g_maxDepth && g_debug)
-                printf("Depth %d, placing on %d, score:%d\n", depth, column, res.score);
+	    if (depth>1) {
+		auto res = abMinimax(!maximizeOrMinimize,
+                                     color == Cell.Orange ? Cell.Yellow : Cell.Orange,
+                                     depth - 1);
+		score = res.score;
+	    }
+            board[rowFilled][column] = Cell.Empty;
+
+            // when loss is certain, avoid forfeiting the match,
+            // by shifting scores by depth...
+            if (score == orangeWins || score == yellowWins)
+                score -= depth * cast(int)color;
+
+            if (depth == maxDepth) // DMD BUG 6319
+                debug printf("Depth %d, placing on %d, score:%d\n",
+                             depth, column, score);
+
             if (maximizeOrMinimize) {
-                if (res.score >= bestScore) {
-                    bestScore = res.score;
+                if (score >= bestScore) { // > is enough
+                    bestScore = score;
                     bestMove = column;
                 }
             } else {
-                if (res.score <= bestScore) {
-                    bestScore = res.score;
+                if (score <= bestScore) { // < is enough
+                    bestScore = score;
                     bestMove = column;
                 }
             }
@@ -149,36 +181,40 @@ Tuple!(int,"move", int,"score") abMinimax(in bool maximizeOrMinimize, in MyCell 
 
         return typeof(return)(bestMove, bestScore);
     }
-}
 
-int main(string[] args) {
-    Board board = loadBoard(args);
-    int scoreOrig = scoreBoard(board);
 
-    if (scoreOrig == ORANGE_WINS) {
-        puts("I win.");
-        return -1;
-    } else if (scoreOrig == YELLOW_WINS) {
-        puts("You win.");
-        return -1;
-    } else {
-        auto res = abMinimax(true, MyCell.Orange, g_maxDepth, board);
+    Tuple!(int,"move", string,"comment") play() pure nothrow {
+        int scoreOrig = computeBoardScore();
 
-        if (res.move != -1) {
-            printf("%d\n", res.move);
-            dropDisk(board, res.move, MyCell.Orange);
-            scoreOrig = scoreBoard(board);
-            if (scoreOrig == ORANGE_WINS) {
-                puts("I win.");
-                return -1;
-            } else if (scoreOrig == YELLOW_WINS) {
-                puts("You win.");
-                return -1;
-            } else
-                return 0;
-        } else {
-            puts("No move possible.");
-            return -1;
+        if (scoreOrig == orangeWins)
+            return typeof(return)(noMove, "I win.");
+        else if (scoreOrig == yellowWins)
+            return typeof(return)(noMove, "You win.");
+
+        auto result = abMinimax(/*do maximize*/ true,
+                                Cell.Orange,
+                                /*depth*/ maxDepth);
+        if (result.move == noMovePossible)
+            return typeof(return)(noMove, "No move possible.");
+        else {
+            dropDisk(result.move, Cell.Orange);
+            scoreOrig = computeBoardScore();
+
+            if (scoreOrig == orangeWins)
+                return typeof(return)(result.move, "I win.");
+            else if (scoreOrig == yellowWins)
+                return typeof(return)(result.move, "You win.");
+            else
+                return typeof(return)(result.move, "");
         }
     }
+}
+
+
+void main(in string[] args) {
+    auto s4 = Score4(args);
+    auto result = s4.play();
+    if (result.move != noMove)
+        writeln(result.move);
+    writeln(result.comment);
 }
