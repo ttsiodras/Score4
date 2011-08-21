@@ -144,7 +144,12 @@ namespace score4
                         break;
                     }
                     int moveInner, scoreInner;
-                    abMinimax(!maximizeOrMinimize, color==Mycell.Orange?Mycell.Yellow:Mycell.Orange, depth-1, board, out moveInner, out scoreInner);
+		    if (depth>1)
+			abMinimax(!maximizeOrMinimize, color==Mycell.Orange?Mycell.Yellow:Mycell.Orange, depth-1, board, out moveInner, out scoreInner);
+		    else {
+			moveInner = -1;
+			scoreInner = s;
+		    }
                     board._slots[rowFilled][column] = Mycell.Barren;
                     /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
                     if (scoreInner == orangeWins || scoreInner == yellowWins)

@@ -116,7 +116,12 @@ let rec abMinimax maximizeOrMinimize color depth board =
                     bestMove <- column
                     foundKiller <- true
                 else
-                    match abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board with
+                    let pair =
+                        if depth = 1 then
+                            (Some(-1),s)
+                        else
+                            abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board
+                    match pair with
                     | (moveInner,scoreInner) ->
                         board.[rowFilled].[column] <- Cell.Barren
                         (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)

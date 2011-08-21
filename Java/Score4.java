@@ -190,10 +190,15 @@ public class Score4 {
                     board.slots[rowFilled][column] = 0;
                     break;
                 }
-                int moveInner, scoreInner;
-                ScoreMoveTuple inner = abMinimax(!maximizeOrMinimize, -color, depth - 1, board);
-                moveInner = inner.move;
-                scoreInner = inner.score;
+		int moveInner, scoreInner;
+		if (depth>1) {
+		    ScoreMoveTuple inner = abMinimax(!maximizeOrMinimize, -color, depth - 1, board);
+		    moveInner = inner.move;
+		    scoreInner = inner.score;
+		} else {
+		    moveInner = -1;
+		    scoreInner = s;
+		}
                 board.slots[rowFilled][column] = 0;
                 if ((depth == g_maxDepth) && g_debug) {
                     System.out.printf("Depth %d, placing on %d, score:%d\n", depth, column, scoreInner);

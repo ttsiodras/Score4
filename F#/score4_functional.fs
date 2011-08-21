@@ -94,7 +94,8 @@ let dropDisk (board:Cell array array) column color =
             newBoard.[y].[column] <- color
     newBoard
 
-let rec abMinimax maximizeOrMinimize color depth board =
+let rec abMinimax maximizeOrMinimize color depth (board:Cell array array) =
+(*
     match depth with
     | 0 -> (None,scoreBoard board)
     | _ ->
@@ -136,6 +137,42 @@ let rec abMinimax maximizeOrMinimize color depth board =
                 let bestMove,bestScore =
                     List.fold (if maximizeOrMinimize then best else worst) (List.head allData) (List.tail allData)
                 (Some(bestMove),bestScore)
+ *)
+    let validMoves =
+        [0 .. (WIDTH-1)] |> List.filter (fun move -> board.[0].[move] = Cell.Barren)
+    match validMoves with
+    | [] -> (None,scoreBoard board)
+    | _  ->
+        let movesAndBoards = validMoves |> List.map (fun column -> (column,dropDisk board column color)) in
+        let movesAndScores = movesAndBoards |>  List.map (fun (column,board) -> (column,scoreBoard board)) in
+        let killerMoves =
+            let targetScore = if maximizeOrMinimize then ORANGEWINS else YELLOWWINS in
+            movesAndScores |> List.filter (fun (_,score) -> score=targetScore) in
+        match killerMoves with
+        | (killerMove,killerScore)::rest -> (Some(killerMove), killerScore)
+        | [] ->
+            let bestScores =
+                match depth with
+                | 1 -> movesAndScores |> List.map snd
+                | _ ->
+                    movesAndBoards |> List.map snd |>
+                    List.map (abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1)) |>
+                    (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+                    List.map (fun (bmove,bscore) ->
+                        let shiftedScore =
+                            match bscore with
+                            | ORANGEWINS | YELLOWWINS -> bscore - depth*(int color)
+                            | _ -> bscore in
+                        shiftedScore) in
+            let allData = List.zip validMoves bestScores in
+            if debug && depth = MAXDEPTH then
+                List.iter (fun (move,score) ->
+                    Printf.printf "Depth %d, placing on %d, Score:%d\n" depth move score) allData ;
+            let best  (_,s as l) (_,s' as r) = if s > s' then l else r
+            let worst (_,s as l) (_,s' as r) = if s < s' then l else r
+            let bestMove,bestScore =
+                List.fold (if maximizeOrMinimize then best else worst) (List.head allData) (List.tail allData) in
+            (Some(bestMove),bestScore)
 
 let inArgs str args =
     any(List.ofSeq(Array.map (fun x -> (x = str)) args))
