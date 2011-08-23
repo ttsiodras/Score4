@@ -22,13 +22,19 @@ namespace score4
         public class Board {
             // Initially, this was Mycell[,]
             // Unfortunately, C# 2D arrays are a lot slower
-            // than simple arrays of arrays (Jagged arrays):
-            public Mycell[][] _slots;
+            // than simple arrays of arrays (Jagged arrays): Mycell[][]
+	    // BUT
+	    // using a 1D array is EVEN faster:
+	    //    _slots[width*Y + X]
+	    // is much faster than
+	    //    _slots[Y][X]
+	    //
+	    // (sigh) Oh well, C# is a VM-based language (specifically, .NET).
+	    // Running fast is not the primary concern in VMs...
+            public Mycell[] _slots;
             public Board()
             {
-               _slots = new Mycell[height][];
-               for(int i=0; i<height; i++)
-                   _slots[i] = new Mycell[width];
+               _slots = new Mycell[height*width];
             }
         };
 
@@ -39,23 +45,23 @@ namespace score4
             // Horizontal spans
             for (int y = 0; y < height; y++)
             {
-                int score = (int) board._slots[y][0] + (int) board._slots[y][1] + (int) board._slots[y][2];
+                int score = (int) board._slots[width*(y)+0] + (int) board._slots[width*(y)+1] + (int) board._slots[width*(y)+2];
                 for (int x = 3; x < width; x++)
                 {
-                    score += (int) board._slots[y][x];
+                    score += (int) board._slots[width*(y)+x];
                     counters[score + 4]++;
-                    score -= (int) board._slots[y][x - 3];
+                    score -= (int) board._slots[width*(y)+x - 3];
                 }
             }
             // Vertical spans
             for (int x = 0; x < width; x++)
             {
-                int score = (int) board._slots[0][x] + (int) board._slots[1][x] + (int) board._slots[2][x];
+                int score = (int) board._slots[width*(0)+x] + (int) board._slots[width*(1)+x] + (int) board._slots[width*(2)+x];
                 for (int y = 3; y < height; y++)
                 {
-                    score += (int) board._slots[y][x];
+                    score += (int) board._slots[width*(y)+x];
                     counters[score + 4]++;
-                    score -= (int) board._slots[y - 3][x];
+                    score -= (int) board._slots[width*(y - 3)+x];
                 }
             }
             // Down-right (and up-left) diagonals
@@ -68,7 +74,7 @@ namespace score4
                     {
                         int yy = y + ofs;
                         int xx = x + ofs;
-                        score += (int) board._slots[yy][xx];
+                        score += (int) board._slots[width*(yy)+xx];
                     }
                     counters[score + 4]++;
                 }
@@ -83,7 +89,7 @@ namespace score4
                     {
                         int yy = y - ofs;
                         int xx = x + ofs;
-                        score += (int) board._slots[yy][xx];
+                        score += (int) board._slots[width*(yy)+xx];
                     }
                     counters[score + 4]++;
                 }
@@ -102,8 +108,8 @@ namespace score4
         public static int dropDisk(Board board, int column, Mycell color)
         {
             for (int y=height-1; y>=0; y--)
-                if (board._slots[y][column] == Mycell.Barren) {
-                    board._slots[y][column] = color;
+                if (board._slots[width*(y)+column] == Mycell.Barren) {
+                    board._slots[width*(y)+column] = color;
                     return y;
             }
             return -1;
@@ -116,7 +122,7 @@ namespace score4
             Board newBoard = new Board();
             foreach(var arg in args)
                 if (arg[0] == 'o' || arg[0] == 'y')
-                    newBoard._slots[arg[1]-'0'][arg[2]-'0'] = (arg[0] == 'o')?Mycell.Orange:Mycell.Yellow;
+                    newBoard._slots[width*(arg[1]-'0')+arg[2]-'0'] = (arg[0] == 'o')?Mycell.Orange:Mycell.Yellow;
             else if (arg == "-debug")
                 g_debug = true;
             return newBoard;
@@ -131,7 +137,7 @@ namespace score4
                 int bestScore=maximizeOrMinimize?-10000000:10000000;
                 int bestMove=-1;
                 for (int column=0; column<width; column++) {
-                    if (board._slots[0][column]!=Mycell.Barren)
+                    if (board._slots[width*(0)+column]!=Mycell.Barren)
                         continue;
                     int rowFilled = dropDisk(board, column, color);
                     if (rowFilled == -1)
@@ -140,7 +146,7 @@ namespace score4
                     if (s == (maximizeOrMinimize?orangeWins:yellowWins)) {
                         bestMove = column;
                         bestScore = s;
-                        board._slots[rowFilled][column] = Mycell.Barren;
+                        board._slots[width*(rowFilled)+column] = Mycell.Barren;
                         break;
                     }
                     int moveInner, scoreInner;
@@ -150,7 +156,7 @@ namespace score4
 			moveInner = -1;
 			scoreInner = s;
 		    }
-                    board._slots[rowFilled][column] = Mycell.Barren;
+                    board._slots[width*(rowFilled)+column] = Mycell.Barren;
                     /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
                     if (scoreInner == orangeWins || scoreInner == yellowWins)
                         scoreInner -= depth * (int)color;
