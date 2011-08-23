@@ -25,7 +25,7 @@ let rec any l =
 
 let counts = Array.create 9 0
 
-let scoreBoard (board:Cell array array) =
+let scoreBoard (board:Cell array) =
     Array.fill counts 0 9 0
 
     (* No need to create a "stub" - by using enums we can just operate on the board!
@@ -33,7 +33,7 @@ let scoreBoard (board:Cell array array) =
     for y=0 to HEIGHT-1 do
         scores.[y] <- Array.zeroCreate WIDTH
         for x=0 to WIDTH-1 do
-            scores.[y].[x] <- int board.[y].[x] *)
+            scores.[WIDTH*(y)+x] <- int board.[WIDTH*(y)+x] *)
 
     let scores = board
 
@@ -42,19 +42,19 @@ let scoreBoard (board:Cell array array) =
 
     (* Horizontal spans *)
     for y=0 to HEIGHT-1 do
-        let mutable score = int scores.[y].[0] + int scores.[y].[1] + int scores.[y].[2]
+        let mutable score = int scores.[WIDTH*(y)+0] + int scores.[WIDTH*(y)+1] + int scores.[WIDTH*(y)+2]
         for x=3 to WIDTH-1 do
-            score <- score + int scores.[y].[x];
+            score <- score + int scores.[WIDTH*(y)+x];
             myincr counts (score+4) ;
-            score <- score - int scores.[y].[x-3]
+            score <- score - int scores.[WIDTH*(y)+x-3]
 
     (* Vertical spans *)
     for x=0 to WIDTH-1 do
-        let mutable score = int scores.[0].[x] + int scores.[1].[x] + int scores.[2].[x]
+        let mutable score = int scores.[WIDTH*(0)+x] + int scores.[WIDTH*(1)+x] + int scores.[WIDTH*(2)+x]
         for y=3 to HEIGHT-1 do
-            score <- score + int scores.[y].[x];
+            score <- score + int scores.[WIDTH*(y)+x];
             myincr counts (score+4);
-            score <- score - int scores.[y-3].[x];
+            score <- score - int scores.[WIDTH*(y-3)+x];
 
     (* Down-right (and up-left) diagonals *)
     for y=0 to HEIGHT-4 do
@@ -63,7 +63,7 @@ let scoreBoard (board:Cell array array) =
             for idx=0 to 3 do
                 let yy = y+idx in
                 let xx = x+idx in
-                score <- score + int scores.[yy].[xx]
+                score <- score + int scores.[WIDTH*(yy)+xx]
             myincr counts (score+4)
 
     (* up-right (and down-left) diagonals *)
@@ -73,7 +73,7 @@ let scoreBoard (board:Cell array array) =
             for idx=0 to 3 do
                 let yy = y-idx in
                 let xx = x+idx in
-                score <- score + int scores.[yy].[xx]
+                score <- score + int scores.[WIDTH*(yy)+xx]
             myincr counts (score+4)
 
     if counts.[0] <> 0 then
@@ -84,12 +84,12 @@ let scoreBoard (board:Cell array array) =
         counts.[5] + 2*counts.[6] + 5*counts.[7] + 10*counts.[8] -
             counts.[3] - 2*counts.[2] - 5*counts.[1] - 10*counts.[0]
 
-let dropDisk (board:Cell array array) column color =
+let dropDisk (board:Cell array) column color =
     let mutable searching = true
     let mutable y = HEIGHT-1
     while searching && y>=0 do
-        if board.[y].[column] = Cell.Barren then
-            board.[y].[column] <- color
+        if board.[WIDTH*(y)+column] = Cell.Barren then
+            board.[WIDTH*(y)+column] <- color
             searching <- false
         else
             y <- y - 1
@@ -107,11 +107,11 @@ let rec abMinimax maximizeOrMinimize color depth board =
         let mutable foundKiller = false
         while not foundKiller && (column<WIDTH-1) do
             column <- column+1
-            if board.[0].[column] = Cell.Barren then
+            if board.[WIDTH*(0)+column] = Cell.Barren then
                 let rowFilled = dropDisk board column color
                 let s = scoreBoard board
                 if s = killerTarget then
-                    board.[rowFilled].[column] <- Cell.Barren
+                    board.[WIDTH*(rowFilled)+column] <- Cell.Barren
                     bestScore <- s
                     bestMove <- column
                     foundKiller <- true
@@ -123,7 +123,7 @@ let rec abMinimax maximizeOrMinimize color depth board =
                             abMinimax (not maximizeOrMinimize) (enum (- int color)) (depth-1) board
                     match pair with
                     | (moveInner,scoreInner) ->
-                        board.[rowFilled].[column] <- Cell.Barren
+                        board.[WIDTH*(rowFilled)+column] <- Cell.Barren
                         (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
                         let shiftedScore =
                             match scoreInner with
@@ -146,18 +146,17 @@ let inArgs str args =
     any(List.ofSeq(Array.map (fun x -> (x = str)) args))
 
 let loadBoard args =
-    let board = Array.zeroCreate HEIGHT
+    let board = Array.zeroCreate (WIDTH*HEIGHT)
     for y=0 to HEIGHT-1 do
-        board.[y] <- Array.zeroCreate WIDTH
         for x=0 to WIDTH-1 do
             let orange = Printf.sprintf "o%d%d" y x
             let yellow = Printf.sprintf "y%d%d" y x
             if inArgs orange args then
-                board.[y].[x] <- Cell.Orange
+                board.[WIDTH*(y)+x] <- Cell.Orange
             else if inArgs yellow args then
-                board.[y].[x] <- Cell.Yellow
+                board.[WIDTH*(y)+x] <- Cell.Yellow
             else
-                board.[y].[x] <- Cell.Barren
+                board.[WIDTH*(y)+x] <- Cell.Barren
         done
     done ;
     board
