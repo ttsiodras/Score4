@@ -121,7 +121,7 @@ struct Score4 {
         foreach_reverse (y; 0 .. height)
             if (board[y][column] == Cell.Empty) {
                 board[y][column] = color;
-                return y;
+                return cast(int)y;
             }
         return boardIsFullError;
     }
