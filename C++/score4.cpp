@@ -73,13 +73,12 @@ int ScoreBoard(const Board& board)
 	}
     }
     // Down-right (and up-left) diagonals
-    static int negativeSlope[4][2] = { {0,0}, {1,1},  {2,2},  {3,3}  };
     for(int y=0; y<height-3; y++) {
 	for(int x=0; x<width-3; x++) {
 	    int score = 0;
 	    for(int idx=0; idx<4; idx++) {
-		int yy = y + negativeSlope[idx][0];
-		int xx = x + negativeSlope[idx][1];
+		int yy = y + idx;
+		int xx = x + idx;
 		assert(inside(yy,xx));
 		score += scores[yy][xx];
 	    }
@@ -87,13 +86,12 @@ int ScoreBoard(const Board& board)
 	}
     }
     // up-right (and down-left) diagonals
-    static int positiveSlope[4][2] = { {0,0}, {-1,1}, {-2,2}, {-3,3} };
     for(int y=3; y<height; y++) {
 	for(int x=0; x<width-3; x++) {
 	    int score = 0;
 	    for(int idx=0; idx<4; idx++) {
-		int yy = y + positiveSlope[idx][0];
-		int xx = x + positiveSlope[idx][1];
+		int yy = y - idx;
+		int xx = x + idx;
 		assert(inside(yy,xx));
 		score += scores[yy][xx];
 	    }
