@@ -6,8 +6,8 @@ all:	$(TARGETS)
 
 test:	|all
 	sh -c "time ./score4 o53 y43 -debug"
-	@echo "That was C++"
-	@echo "=============="
+	@echo "That was C"
+	@echo "=========="
 
 clean:
 	@rm -rf $(TARGETS)
