@@ -14,9 +14,7 @@ score4.exe:	score4.cs
 	$(CSHARPCOMPILER) $^
 
 test:	| all
-	sh -c "time $(MONO) ./score4.exe o53 y43 -debug"
-	@echo "That was C# (imperative, C++ mirror)"
-	@echo "===================================="
+	@echo -n 'C#(imperative)' ; for i in {1..10} ; do sh -c "time $(MONO) ./score4.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
 
 clean:
 	rm -f score4.exe

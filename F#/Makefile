@@ -16,12 +16,8 @@ all:	$(TARGETS)
 	$(MONO) $(FSHARPCOMPILER) --checked- --optimize+ $^
 
 test:	| all
-	sh -c "time $(MONO) ./score4_functional.exe o53 y43 -debug"
-	@echo "That was F# (functional)"
-	@echo "========================"
-	sh -c "time $(MONO) ./score4.exe o53 y43 -debug"
-	@echo "That was F# (imperative, C++ mirror)"
-	@echo "===================================="
+	@echo -n 'F#(functional)' ; for i in {1..10} ; do sh -c "time $(MONO) ./score4_functional.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'F#(imperative)' ; for i in {1..10} ; do sh -c "time $(MONO) ./score4.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
 
 clean:
 	rm -f $(TARGETS)

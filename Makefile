@@ -21,7 +21,7 @@ playSimple:
 
 benchmark:
 	@for f in ${DIRS} ; do make -C "$$f" ; done
-	@( for f in ${DIRS} ; do make -C "$$f" test 2>&1 ; done ) | perl -e '$$a=""; while(<>) { if (/^That|^real/) { $$a.=$$_;}}; $$a =~s/\nThat/: That/g; print $$a;' | sort -n -k 2
+	@( for f in ${DIRS} ; do make -s -C "$$f" test 2>&1 ; done )
 
 clean:
 	for f in ${DIRS} ; do make -C "$$f" clean ; done
