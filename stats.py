@@ -17,5 +17,5 @@ variance = (totalSq - total*total/n)/n
 print "Std deviation:", math.sqrt(variance)
 srted = sorted(allOfThem)
 print "Median:", srted[-1 + len(allOfThem)/2]
-print "Min:", srted[0]
+print "Min:%4.3f" % srted[0]
 print "Max:", srted[-1]

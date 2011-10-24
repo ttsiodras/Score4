@@ -21,7 +21,7 @@ playSimple:
 
 benchmark:
 	@for f in ${DIRS} ; do make -C "$$f" ; done
-	@( for f in ${DIRS} ; do make -s -C "$$f" test 2>&1 ; done )
+	@( for f in ${DIRS} ; do make -s -C "$$f" test 2>&1 ; done ) | awk -F: '{print $$2 " : " $$1}' | sort -n
 
 clean:
 	for f in ${DIRS} ; do make -C "$$f" clean ; done
