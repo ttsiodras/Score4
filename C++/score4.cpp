@@ -98,6 +98,28 @@ int ScoreBoard(const Board& board)
 	    counters[score+4]++;
 	}
     }
+/*
+For down-right diagonals, I also tried this incremental version of the 
+diagonal scores calculations... It is doing less computation than
+the alternative above, but unfortunately, the use of the tuple array
+makes the overall results worse in my Celeron E3400... I suspect
+because the access to the array triggers cache misses.
+
+    static const char dl[][2] = { {0,3},{0,4},{0,5},{0,6},{1,6},{2,6} };
+    for(int idx=0; idx<6; idx++) {
+        int y = dl[idx][0];
+        int x = dl[idx][1];
+	assert(inside(y,x));
+        int score = scores[y][x] + scores[y+1][x-1] + scores[y+2][x-2];
+	while (((y+3)<height) && (x-3)>=0) {
+	    assert(inside(y+3,x-3));
+            score += scores[y+3][x-3];
+            counters[score+4]++;
+            score -= scores[y][x];
+            y++; x--;
+	}
+    }
+*/
     if (counters[0] != 0)
 	return yellowWins;
     else if (counters[8] != 0)

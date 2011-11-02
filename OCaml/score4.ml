@@ -79,6 +79,56 @@ let scoreBoard board =
 	done
     done ;
 
+(* 
+
+For down-right and up-left diagonals, I also tried this incremental version
+of the diagonal scores calculations... It is doing less computation than
+the alternative above, but unfortunately, the use of the two tuple lists 
+makes the overall results worse in my Celeron E3400... I suspect
+because the access to the list triggers cache misses.
+
+Outside, in global space:
+
+    (* anchors to start calculating scores while moving down right *)
+    let dr = [| (2,0);(1,0);(0,0);(0,1);(0,2);(0,3) |]
+    (* anchors to start calculating scores while moving down left *)
+    let dl = [| (0,3);(0,4);(0,5);(0,6);(1,6);(2,6) |]
+
+And in this function, using the anchors to do the calculation incrementally,
+just as we do for vertical and horizontal spaces:
+
+    (* Down-right (and up-left) diagonals *)
+    for idx=0 to 5 do
+        let (yinit, xinit) = dr.(idx) in
+        let y = ref yinit in
+        let x = ref xinit in
+        let score = ref (board.(!y).(!x) + board.(!y + 1).(!x + 1) + board.(!y + 2).(!x + 2)) in
+	while !y+3<=height-1 && !x+3<=width-1 do
+            score := !score + board.(!y+3).(!x+3) ;
+            myincr counts (!score+4) ;
+            score := !score - board.(!y).(!x) ;
+            y := !y+1 ;
+            x := !x+1 ;
+	done
+    done ;
+
+    (* Down-left (and up-right) diagonals *)
+    for idx=0 to 5 do
+        let (yinit, xinit) = dl.(idx) in
+        let y = ref yinit in
+        let x = ref xinit in
+        let score = ref (board.(!y).(!x) + board.(!y + 1).(!x - 1) + board.(!y + 2).(!x - 2)) in
+	while !y+3<=height-1 && !x-3>=0 do
+            score := !score + board.(!y+3).(!x-3) ;
+            myincr counts (!score+4) ;
+            score := !score - board.(!y).(!x) ;
+            y := !y+1 ;
+            x := !x-1 ;
+	done
+    done ;
+
+*)
+
     if counts.(0) <> 0 then
         yellowWins
     else if counts.(8) <> 0 then
