@@ -32,12 +32,6 @@ let inside y x =
 
 let otherColor color = -color
 
-(* diagonal, down-right *)
-let negativeSlope = [| (0,0); (1,1);   (2,2);   (3,3)  |]
-
-(* diagonal, up-right   *)
-let positiveSlope = [| (0,0); (-1,1);  (-2,2);  (-3,3) |]
-
 let scoreBoard board =
     let counts = [| 0;0;0;0;0;0;0;0;0 |] in
 
