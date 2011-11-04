@@ -23,3 +23,6 @@ D/score4.o
 Haskell/score4.bin
 Haskell/score4.hi
 Haskell/score4.o
+OCaml/common.cmi
+OCaml/common.cmx
+OCaml/common.o
