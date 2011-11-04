@@ -3,7 +3,7 @@ CRUFT=$(shell echo *.cm? *.o)
 
 all:	$(TARGETS)
 
-%.bin: %.ml
+%.bin: %.ml common.ml
 	ocamlopt -unsafe -rectypes -inline 1000 -o ./$@ common.ml $<
 
 clean:
