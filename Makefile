@@ -1,4 +1,4 @@
-DIRS:="F\#" Java "C\#" OCaml C++ C
+DIRS:=C++ C Java OCaml "C\#" "F\#"
 
 all:
 	@echo Use:
@@ -21,7 +21,10 @@ playSimple:
 
 benchmark:
 	@for f in ${DIRS} ; do make -C "$$f" ; done
-	@( for f in ${DIRS} ; do make -s -C "$$f" test 2>&1 ; done ) | awk -F: '{print $$2 " : " $$1}' | sort -n
+	@echo ======================
+	@echo = Running benchmarks =
+	@echo ======================
+	@for f in ${DIRS} ; do make -s -C "$$f" test 2>&1 ; done
 
 clean:
 	for f in ${DIRS} ; do make -C "$$f" clean ; done

@@ -10,5 +10,5 @@ clean:
 	rm -f $(TARGETS) $(CRUFT)
 
 test:	|all
-	@echo -n 'OCaml(functional)' ; for i in {1..10} ; do sh -c "time ./score4_functional.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
-	@echo -n 'OCaml(imperative)' ; for i in {1..10} ; do sh -c "time ./score4.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative OCaml ...' ; for i in {1..10} ; do sh -c "time ./score4.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking functional OCaml ...' ; for i in {1..10} ; do sh -c "time ./score4_functional.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
