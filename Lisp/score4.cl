@@ -17,27 +17,71 @@
 (defmacro myincr ()
   `(incf (aref counts (+ 4 score))))
 
+; My first *real* macro: it unrolls the loops done in
+; the horizontal spans checking at compile-time!
+;
+; Mysteries: Both SBCL and CMUCL speed increases by more than 
+; 15% because of this loop-unrolling - but for some weird
+; reason, the declare fixnum for the score... makes SBCL
+; 40% slower, so I have it commented out... which makes
+; CMUCL complain during optimization. Go figure :-)
+;
+(defmacro horizontal-spans ()
+  `(progn
+    (let ((score 0))
+    ;(declare (type fixnum score))
+    ,@(loop for y fixnum from 0 to (1- height)
+      collect `(setf score (+ (at ,y 0) (at ,y 1) (at ,y 2)))
+      nconc (loop for x fixnum from 3 to (1- width)
+        collect `(incf score (at ,y ,x))
+        collect `(myincr)
+        collect `(decf score (at ,y (- ,x 3)))
+        )))))
+
+; Mysteries continue - the horizontal-spans loop-unrolling
+; improved the speed a lot, but the vertical-spans ...
+; don't improve speed at ALL. I am guessing I am in cache-line
+; phenomena... Oh, and the "declare fixnum" for the score
+; doesn't impact SBCL speed here...
+(defmacro vertical-spans ()
+  `(progn
+    (let ((score 0))
+    (declare (type fixnum score))
+    ,@(loop for x fixnum from 0 to (1- width)
+      collect `(setf score (+ (at 0 ,x) (at 1 ,x) (at 2 ,x)))
+      nconc (loop for y fixnum from 3 to (1- height)
+        collect `(incf score (at ,y ,x))
+        collect `(myincr)
+        collect `(decf score (at (- ,y 3) ,x))
+        )))))
+
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
   (declare (type (simple-array fixnum (6 7)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
-    ; Horizontal spans
-    (loop for y from 0 to (1- height) do
-      (let ((score (+ (at y 0)  (at y 1) (at y 2))))
-        (declare (type fixnum score))
-        (loop for x from 3 to (1- width) do
-          (incf score (at y x))
-          (myincr)
-          (decf score (at y (- x 3))))))
+    ; Horizontal spans - normal code
+    ;(loop for y from 0 to (1- height) do
+    ;  (let ((score (+ (at y 0)  (at y 1) (at y 2))))
+    ;    (declare (type fixnum score))
+    ;    (loop for x from 3 to (1- width) do
+    ;      (incf score (at y x))
+    ;      (myincr)
+    ;      (decf score (at y (- x 3))))))
+    
+    ; Loop-unrolling done via this macro:
+    (horizontal-spans)
 
-    ; Vertical spans
-    (loop for x from 0 to (1- width) do
-      (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
-        (declare (type fixnum score))
-        (loop for y from 3 to (1- height) do
-          (incf score (at y x))
-          (myincr)
-          (decf score (at (- y 3) x)))))
+    ; Vertical spans - loop unrolling macro makes code slower... :-(
+    ;(loop for x from 0 to (1- width) do
+    ;  (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
+    ;    (declare (type fixnum score))
+    ;    (loop for y from 3 to (1- height) do
+    ;      (incf score (at y x))
+    ;      (myincr)
+    ;      (decf score (at (- y 3) x)))))
+    ;
+    ; Loop-unrolling done via this macro:
+    (vertical-spans)
 
     ; Down-right (and up-left) diagonals
     (loop for y fixnum from 0 to (- height 4) do
