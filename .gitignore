@@ -26,3 +26,5 @@ Haskell/score4.o
 OCaml/common.cmi
 OCaml/common.cmx
 OCaml/common.o
+Lisp/compiler.notes
+Lisp/score4.fasl
