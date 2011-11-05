@@ -5,6 +5,12 @@
 (defparameter *debug* t)
 (defparameter *maxDepth* 7)
 
+;SBCL specific compiler notes
+;(declaim (sb-ext:unmuffle-conditions sb-ext:compiler-note))
+
+; Give me speed!
+(declaim (optimize (speed 3) (safety 0) (debug 0)))
+
 (defmacro at (y x)
   `(aref board ,y ,x))
 
@@ -13,7 +19,7 @@
 
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
-  (declare (type (simple-array fixnum (6 7)) board) (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (type (simple-array fixnum (6 7)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
     ; Horizontal spans
     (loop for y from 0 to (1- height) do
@@ -118,7 +124,7 @@
 
 (declaim (inline dropDisk))
 (defun dropDisk (board column color)
-  (declare (type (simple-array fixnum (6 7)) board) (type fixnum column color) (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (type (simple-array fixnum (6 7)) board) (type fixnum column color))
   (loop for y fixnum from (1- height) downto 0 do
     (cond
       ((= 0 (at y column))
@@ -128,7 +134,7 @@
   -1)
 
 (defun minimax (maximizeOrMinimize color depth board)
-  (declare (type fixnum color depth) (type (simple-array fixnum (6 7)) board) (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (type fixnum color depth) (type (simple-array fixnum (6 7)) board))
   (let ((bestScore (cond (maximizeOrMinimize yellowWins) (t orangeWins)))
         (bestMove -1)
         (killerTarget (cond (maximizeOrMinimize orangeWins) (t yellowWins))))
@@ -212,12 +218,14 @@
 ;        | Some column -> Printf.printf "%d\n" column ; 0
 ;        | _ -> failwith "No move possible"
 
-(let
-  ((board (make-array '(6 7) :initial-element 0 :element-type 'fixnum)))
-  (setf (at 5 3) 1)
-  (setf (at 4 3) -1)
-  (time (format t "~A" (minimax t 1 *maxDepth* board)))
-  (quit))
-  ;(format t "~A" (scoreBoard board)))
+(defun bench ()
+  (let
+    ((board (make-array '(6 7) :initial-element 0 :element-type 'fixnum)))
+    (setf (at 5 3) 1)
+    (setf (at 4 3) -1)
+    (time (format t "~A" (minimax t 1 *maxDepth* board)))))
+
+(bench)
+(quit)
 
 ; vim: set expandtab ts=8 sts=2 shiftwidth=2
