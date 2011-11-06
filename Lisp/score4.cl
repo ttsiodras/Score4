@@ -20,14 +20,14 @@
 (defmacro myincr ()
   `(incf (aref counts (+ 4 score))))
 
-; My first *real* macros: they unroll the loops done in
+;
+;; My first *real* macros: they unroll the loops done in
 ; the spans checking at compile-time!
 ;
-; Mysteries: Both SBCL and CMUCL speed increases by more than
-; 15% because of this loop-unrolling - but for some weird
-; reason, the declare fixnum for the score... makes both SBCL
-; and CMUCL slower, so I have it commented out... which makes
-; CMUCL complain during optimization. No idea why...
+; I finally understand why LISP macros are powerful.
+; God, they really are... By unrolling the loops at
+; compile time via the 4 "-spans" macros, speed is now
+; better than OCaml!
 ;
 (defmacro horizontal-spans ()
   ; normal code is...
@@ -44,7 +44,7 @@
   ;
   `(progn
     (let ((score 0))
-    ;(declare (type fixnum score))
+    (declare (type fixnum score))
     ,@(loop for y fixnum from 0 to (1- height)
       collect `(setf score (+ (at ,y 0) (at ,y 1) (at ,y 2)))
       nconc (loop for x fixnum from 3 to (1- width)
@@ -103,7 +103,7 @@
       nconc (loop for x fixnum from 0 to (- width 4)
         collect `(setf score 0)
         nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(+ y idx) ,(+ x idx))))
+        collect `(incf score (at ,(the fixnum (+ y idx)) ,(the fixnum (+ x idx)))))
       collect `(myincr)
       )))))
 
@@ -127,7 +127,7 @@
       nconc (loop for x fixnum from 0 to (- width 4)
         collect `(setf score 0)
         nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(- y idx) ,(+ x idx))))
+        collect `(incf score (at ,(the fixnum (- y idx)) ,(the fixnum (+ x idx)))))
       collect `(myincr)
       )))))
 
@@ -135,6 +135,16 @@
 (defun scoreBoard (board)
   (declare (type (simple-array fixnum (48)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
+
+    ; we add the board values on 4 consecutive cells, and therefore
+    ; get a result that can be from -4 to 4 (9 possible values).
+    ; We then update the "counts" 1D array of these 9 possible
+    ; values (cumulative frequencies of values seen).
+    ;
+    ; This is done via the following 4 macros,
+    ; which unroll (at compile-time!) the computations necessary
+    ; (use macroexpand to marvel at their glory...)
+    ;
     (horizontal-spans)
     (vertical-spans)
     (downright-spans)
