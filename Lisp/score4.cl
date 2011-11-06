@@ -269,7 +269,8 @@
     (setf (at 4 3) -1)
     (time (format t "~A" (minimax t 1 *maxDepth* board)))))
 
-(bench)
+(dotimes (n 10 nil)
+  (bench))
 (quit)
 
 ; vim: set expandtab ts=8 sts=2 shiftwidth=2
