@@ -53,12 +53,6 @@
         collect `(decf score (at ,y ,(- x 3)))
         )))))
 
-; Mysteries continue - the horizontal-spans loop-unrolling
-; improved the speed a lot, but the vertical-spans ... didn't.
-; At ALL. I am guessing I am in cache-line phenomena...
-; Oh, and the "declare fixnum" for the score doesn't impact
-; SBCL speed here...
-;
 (defmacro vertical-spans ()
   ; normal code is...
   ;
