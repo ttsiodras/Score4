@@ -37,7 +37,7 @@
       nconc (loop for x fixnum from 3 to (1- width)
         collect `(incf score (at ,y ,x))
         collect `(myincr)
-        collect `(decf score (at ,y (- ,x 3)))
+        collect `(decf score (at ,y ,(- x 3)))
         )))))
 
 ; Mysteries continue - the horizontal-spans loop-unrolling
@@ -54,7 +54,7 @@
       nconc (loop for y fixnum from 3 to (1- height)
         collect `(incf score (at ,y ,x))
         collect `(myincr)
-        collect `(decf score (at (- ,y 3) ,x))
+        collect `(decf score (at ,(- y 3) ,x))
         )))))
 
 (declaim (inline scoreBoard))
