@@ -5,9 +5,6 @@
 (defparameter *debug* t)
 (defparameter *maxDepth* 7)
 
-;SBCL specific compiler notes
-;(declaim (sb-ext:unmuffle-conditions sb-ext:compiler-note))
-
 ; Give me speed!
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
@@ -16,19 +13,35 @@
   ; we use 8x and not 7x, because it's faster for SBCL :-)
   `(aref board (the fixnum (+ (the fixnum (* 8 ,y)) ,x))))
 
+; The scoreBoard function adds the board values on 4 consecutive
+; cells, and therefore the result spans from -4 to 4 (9 values)
+; This macro updates the "counts" 1D array of these 9 possible
+; values (cumulative frequencies of values seen)
 (defmacro myincr ()
   `(incf (aref counts (+ 4 score))))
 
-; My first *real* macro: it unrolls the loops done in
-; the horizontal spans checking at compile-time!
+; My first *real* macros: they unroll the loops done in
+; the spans checking at compile-time!
 ;
-; Mysteries: Both SBCL and CMUCL speed increases by more than 
+; Mysteries: Both SBCL and CMUCL speed increases by more than
 ; 15% because of this loop-unrolling - but for some weird
-; reason, the declare fixnum for the score... makes SBCL
-; 40% slower, so I have it commented out... which makes
-; CMUCL complain during optimization. Go figure :-)
+; reason, the declare fixnum for the score... makes both SBCL
+; and CMUCL slower, so I have it commented out... which makes
+; CMUCL complain during optimization. No idea why...
 ;
 (defmacro horizontal-spans ()
+  ; normal code is...
+  ;
+  ;(loop for y fixnum from 0 to (1- height) do
+  ;  (let ((score (+ (at y 0)  (at y 1) (at y 2))))
+  ;    (declare (type fixnum score))
+  ;    (loop for x fixnum from 3 to (1- width) do
+  ;      (incf score (at y x))
+  ;      (myincr)
+  ;      (decf score (at y (- x 3))))))
+  ;
+  ; Loop-unrolling done via this macro:
+  ;
   `(progn
     (let ((score 0))
     ;(declare (type fixnum score))
@@ -41,11 +54,24 @@
         )))))
 
 ; Mysteries continue - the horizontal-spans loop-unrolling
-; improved the speed a lot, but the vertical-spans ...
-; don't improve speed at ALL. I am guessing I am in cache-line
-; phenomena... Oh, and the "declare fixnum" for the score
-; doesn't impact SBCL speed here...
+; improved the speed a lot, but the vertical-spans ... didn't.
+; At ALL. I am guessing I am in cache-line phenomena...
+; Oh, and the "declare fixnum" for the score doesn't impact
+; SBCL speed here...
+;
 (defmacro vertical-spans ()
+  ; normal code is...
+  ;
+  ;(loop for x fixnum from 0 to (1- width) do
+  ;  (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
+  ;    (declare (type fixnum score))
+  ;    (loop for y fixnum from 3 to (1- height) do
+  ;      (incf score (at y x))
+  ;      (myincr)
+  ;      (decf score (at (- y 3) x)))))
+  ;
+  ; Loop-unrolling done via this macro:
+  ;
   `(progn
     (let ((score 0))
     (declare (type fixnum score))
@@ -57,51 +83,63 @@
         collect `(decf score (at ,(- y 3) ,x))
         )))))
 
+(defmacro downright-spans ()
+  ;normal code is...
+  ;
+  ;  (loop for y fixnum from 0 to (- height 4) do
+  ;    (loop for x fixnum from 0 to (- width 4) do
+  ;      (let ((score 0))
+  ;        (declare (type fixnum score))
+  ;        (loop for idx fixnum from 0 to 3 do
+  ;          (incf score (at (+ y idx) (+ x idx))))
+  ;        (myincr))))
+  ;
+  ; Loop-unrolling done via this macro:
+  ;
+  `(progn
+    (let ((score 0))
+    (declare (type fixnum score))
+    ,@(loop for y fixnum from 0 to (- height 4)
+      nconc (loop for x fixnum from 0 to (- width 4)
+        collect `(setf score 0)
+        nconc (loop for idx fixnum from 0 to 3
+        collect `(incf score (at ,(+ y idx) ,(+ x idx))))
+      collect `(myincr)
+      )))))
+
+(defmacro upright-spans ()
+  ;normal code is...
+  ;
+  ;  (loop for y fixnum from 3 to (1- height) do
+  ;    (loop for x fixnum from 0 to (- width 4) do
+  ;      (let ((score 0))
+  ;        (declare (type fixnum score))
+  ;        (loop for idx fixnum from 0 to 3 do
+  ;          (incf score (at (- y idx) (+ x idx))))
+  ;        (myincr))))
+  ;
+  ; Loop-unrolling done via this macro:
+  ;
+  `(progn
+    (let ((score 0))
+    (declare (type fixnum score))
+    ,@(loop for y fixnum from 3 to (1- height)
+      nconc (loop for x fixnum from 0 to (- width 4)
+        collect `(setf score 0)
+        nconc (loop for idx fixnum from 0 to 3
+        collect `(incf score (at ,(- y idx) ,(+ x idx))))
+      collect `(myincr)
+      )))))
+
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
   (declare (type (simple-array fixnum (48)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
-    ; Horizontal spans - normal code
-    ;(loop for y fixnum from 0 to (1- height) do
-    ;  (let ((score (+ (at y 0)  (at y 1) (at y 2))))
-    ;    (declare (type fixnum score))
-    ;    (loop for x fixnum from 3 to (1- width) do
-    ;      (incf score (at y x))
-    ;      (myincr)
-    ;      (decf score (at y (- x 3))))))
-    ;
-    ; Loop-unrolling done via this macro:
     (horizontal-spans)
-
-    ; Vertical spans - normal code
-    ;(loop for x fixnum from 0 to (1- width) do
-    ;  (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
-    ;    (declare (type fixnum score))
-    ;    (loop for y fixnum from 3 to (1- height) do
-    ;      (incf score (at y x))
-    ;      (myincr)
-    ;      (decf score (at (- y 3) x)))))
-    ;
-    ; Loop-unrolling done via this macro:
     (vertical-spans)
+    (downright-spans)
+    (upright-spans)
 
-    ; Down-right (and up-left) diagonals
-    (loop for y fixnum from 0 to (- height 4) do
-      (loop for x fixnum from 0 to (- width 4) do
-        (let ((score 0))
-          (declare (type fixnum score))
-          (loop for idx fixnum from 0 to 3 do
-            (incf score (at (+ y idx) (+ x idx))))
-          (myincr))))
-
-    ; up-right (and down-left) diagonals
-    (loop for y fixnum from 3 to (1- height) do
-      (loop for x fixnum from 0 to (- width 4) do
-        (let ((score 0))
-          (declare (type fixnum score))
-          (loop for idx fixnum from 0 to 3 do
-            (incf score (at (- y idx) (+ x idx))))
-          (myincr))))
 ;
 ;For down-right and up-left diagonals, I also tried this incremental version
 ;of the diagonal scores calculations... It is doing less computation than
