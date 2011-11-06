@@ -311,7 +311,7 @@
     (setf (at 4 3) -1)
     (time (format t "~A" (minimax t 1 *maxDepth* board)))))
 
-(dotimes (n 3 nil)
+(dotimes (n 10 nil)
   (bench))
 (quit)
 
