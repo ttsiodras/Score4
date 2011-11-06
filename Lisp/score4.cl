@@ -315,6 +315,15 @@
     (setf (at 4 3) -1)
     (time (format t "~A" (minimax t 1 *maxDepth* board)))))
 
+; to create a standalone executable with SBCL, comment out the
+; rest of the code, and do this
+;
+; (load "score4.cl")
+; (sb-ext:save-lisp-and-die "score4.exe" :executable t )
+;
+; Then, when you spawn "score4.exe",
+; just invoke (bench)
+;
 (dotimes (n 10 nil)
   (bench))
 (quit)
