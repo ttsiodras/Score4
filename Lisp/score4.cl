@@ -62,22 +62,22 @@
   (declare (type (simple-array fixnum (48)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
     ; Horizontal spans - normal code
-    ;(loop for y from 0 to (1- height) do
+    ;(loop for y fixnum from 0 to (1- height) do
     ;  (let ((score (+ (at y 0)  (at y 1) (at y 2))))
     ;    (declare (type fixnum score))
-    ;    (loop for x from 3 to (1- width) do
+    ;    (loop for x fixnum from 3 to (1- width) do
     ;      (incf score (at y x))
     ;      (myincr)
     ;      (decf score (at y (- x 3))))))
-    
+    ;
     ; Loop-unrolling done via this macro:
     (horizontal-spans)
 
     ; Vertical spans - normal code
-    ;(loop for x from 0 to (1- width) do
+    ;(loop for x fixnum from 0 to (1- width) do
     ;  (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
     ;    (declare (type fixnum score))
-    ;    (loop for y from 3 to (1- height) do
+    ;    (loop for y fixnum from 3 to (1- height) do
     ;      (incf score (at y x))
     ;      (myincr)
     ;      (decf score (at (- y 3) x)))))
