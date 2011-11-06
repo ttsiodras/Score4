@@ -12,7 +12,9 @@
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
 (defmacro at (y x)
-  `(aref board ,y ,x))
+  ; we emulate a 6x7 board with a 6x8 = 48 one-dimensional one
+  ; we use 8x and not 7x, because it's faster for SBCL :-)
+  `(aref board (the fixnum (+ (the fixnum (* 8 ,y)) ,x))))
 
 (defmacro myincr ()
   `(incf (aref counts (+ 4 score))))
@@ -57,7 +59,7 @@
 
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
-  (declare (type (simple-array fixnum (6 7)) board))
+  (declare (type (simple-array fixnum (48)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
     ; Horizontal spans - normal code
     ;(loop for y from 0 to (1- height) do
@@ -71,7 +73,7 @@
     ; Loop-unrolling done via this macro:
     (horizontal-spans)
 
-    ; Vertical spans - loop unrolling macro makes code slower... :-(
+    ; Vertical spans - normal code
     ;(loop for x from 0 to (1- width) do
     ;  (let ((score (+ (at 0 x) (at 1 x) (at 2 x))))
     ;    (declare (type fixnum score))
@@ -168,7 +170,7 @@
 
 (declaim (inline dropDisk))
 (defun dropDisk (board column color)
-  (declare (type (simple-array fixnum (6 7)) board) (type fixnum column color))
+  (declare (type (simple-array fixnum (48)) board) (type fixnum column color))
   (loop for y fixnum from (1- height) downto 0 do
     (cond
       ((= 0 (at y column))
@@ -178,7 +180,7 @@
   -1)
 
 (defun minimax (maximizeOrMinimize color depth board)
-  (declare (type fixnum color depth) (type (simple-array fixnum (6 7)) board))
+  (declare (type fixnum color depth) (type (simple-array fixnum (48)) board))
   (let ((bestScore (cond (maximizeOrMinimize yellowWins) (t orangeWins)))
         (bestMove -1)
         (killerTarget (cond (maximizeOrMinimize orangeWins) (t yellowWins))))
@@ -264,12 +266,14 @@
 
 (defun bench ()
   (let
-    ((board (make-array '(6 7) :initial-element 0 :element-type 'fixnum)))
+    ; we emulate a 6x7 board with a 6x8 = 48 one-dimensional one
+    ; we use 8x and not 7x, because it's faster for SBCL :-)
+    ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
     (setf (at 5 3) 1)
     (setf (at 4 3) -1)
     (time (format t "~A" (minimax t 1 *maxDepth* board)))))
 
-(dotimes (n 10 nil)
+(dotimes (n 3 nil)
   (bench))
 (quit)
 
