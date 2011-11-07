@@ -2,7 +2,7 @@
 (defconstant height 6)
 (defconstant orangeWins 1000000)
 (defconstant yellowWins -1000000)
-(defparameter *debug* t)
+(defparameter *debug* nil)
 (defparameter *maxDepth* 7)
 
 ; Give me speed!
@@ -268,50 +268,18 @@
                             (setf bestMove column)))))))))))
     (list bestMove bestScore)))
 
-;(* let any = List.fold_left (||) false
-; * ..is slower than ... *)
-;let rec any l =
-;    match l with
-;    | []        -> false
-;    | true::xs  -> true
-;    | false::xs -> any xs
-;
-;let inArgs args str =
-;    any(Array.to_list (Array.map (fun x -> (x = str)) args))
-;
-;let loadBoard args =
-;    let board = Array.make_matrix height width 0 in
-;    for y=0 to height-1 do
-;        for x=0 to width-1 do
-;            let orange = Printf.sprintf "o%d%d" y x in
-;            let yellow = Printf.sprintf "y%d%d" y x in
-;            if inArgs args orange then
-;                board.(y).(x) <- 1
-;            else if inArgs args yellow then
-;                board.(y).(x) <- -1
-;            else
-;                board.(y).(x) <- 0
-;        done
-;    done ;
-;    board
-
-;let _ =
-;    let board = loadBoard Sys.argv in
-;    let scoreOrig = scoreBoard board in
-;    debug := inArgs Sys.argv "-debug" ;
-;    if !debug then
-;        Printf.printf "Starting score: %d\n" scoreOrig ;
-;    if scoreOrig = orangeWins then begin
-;        Printf.printf "I win\n" ;
-;        (-1)
-;    end else if scoreOrig = yellowWins then begin
-;        Printf.printf "You win\n" ;
-;        (-1)
-;    end else
-;        let mv,score = abMinimax true 1 maxDepth board in
-;        match mv with
-;        | Some column -> Printf.printf "%d\n" column ; 0
-;        | _ -> failwith "No move possible"
+(defun loadboard (args)
+  (let ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
+    (format t "~A~%" args)
+    (loop for y fixnum from 0 to (1- height) do
+      (loop for x fixnum from 0 to (1- width) do
+        (let ((orange (format nil "o~A~A" y x))
+              (yellow (format nil "y~A~A" y x)))
+          (if (find orange args :test #'equal)
+            (setf (at y x) 1))
+          (if (find yellow args :test #'equal)
+            (setf (at y x) -1)))))
+    board))
 
 (defun bench ()
   (let
@@ -320,19 +288,56 @@
     ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
     (setf (at 5 3) 1)
     (setf (at 4 3) -1)
-    (time (format t "~A" (minimax t 1 *maxDepth* board)))))
+    (dotimes (n 10 nil)
+      (time (format t "~A" (minimax t 1 *maxDepth* board))))))
 
-; to create a standalone executable with SBCL, comment out the
-; rest of the code, and do this
+(defun my-command-line ()
+  (or
+    #+SBCL *posix-argv*
+    #+LISPWORKS system:*line-arguments-list*
+    #+CMU extensions:*command-line-words*
+    nil))
+
+(defun main ()
+  (let ((args (my-command-line))
+        (exitCode 0))
+    (cond
+      ((<= (length args) 1)
+        (progn
+	  (format t "Benchmarking...~%")
+	  (bench)))
+      (t
+	(let* ((board (loadboard args))
+               (scoreOrig (scoreBoard board)))
+          (if (find "-debug" args :test #'equal)
+            (setf *debug* t))
+          (if *debug*
+            (format t "Starting score: ~A~%" scoreOrig))
+          (cond
+            ((= scoreOrig orangeWins)
+             (progn
+               (print "I win")
+               (setf exitCode -1)))
+            ((= scoreOrig yellowWins)
+             (progn
+               (print "You win")
+               (setf exitCode -1)))
+            (t
+              (let ((result (minimax t 1 *maxDepth* board)))
+                (format t "~A~%" (car result))
+                (setf exitCode 0)))))))
+    exitCode))
+
+(main)
+(or #+SBCL (quit))
+
+; to create a standalone executable with SBCL, comment out the quit above,
+; then...
 ;
 ; (load "score4.cl")
 ; (sb-ext:save-lisp-and-die "score4.exe" :executable t )
 ;
 ; Then, when you spawn "score4.exe",
-; just invoke (bench)
+; just invoke (main)
 ;
-(dotimes (n 10 nil)
-  (bench))
-(quit)
-
 ; vim: set expandtab ts=8 sts=2 shiftwidth=2
