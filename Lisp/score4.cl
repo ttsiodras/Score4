@@ -8,10 +8,16 @@
 ; Give me speed!
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
+; in the same vein (speed) we need (in many places) to specify
+; that the result of an operation fits in a fixnum
+; so we macro (the fixnum (...))
+(defmacro fast (&rest args)
+  `(the fixnum ,args))
+
 (defmacro at (y x)
   ; we emulate a 6x7 board with a 6x8 = 48 one-dimensional one
   ; we use 8x and not 7x, because it's faster for SBCL :-)
-  `(aref board (the fixnum (+ (the fixnum (* 8 ,y)) ,x))))
+  `(aref board (fast + (fast * 8 ,y) ,x)))
 
 ; The scoreBoard function adds the board values on 4 consecutive
 ; cells, and therefore the result spans from -4 to 4 (9 values)
@@ -97,7 +103,7 @@
       nconc (loop for x fixnum from 0 to (- width 4)
         collect `(setf score 0)
         nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(the fixnum (+ y idx)) ,(the fixnum (+ x idx)))))
+        collect `(incf score (at ,(fast + y idx) ,(fast + x idx))))
       collect `(myincr)
       )))))
 
@@ -121,7 +127,7 @@
       nconc (loop for x fixnum from 0 to (- width 4)
         collect `(setf score 0)
         nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(the fixnum (- y idx)) ,(the fixnum (+ x idx)))))
+        collect `(incf score (at ,(fast - y idx) ,(fast + x idx))))
       collect `(myincr)
       )))))
 
@@ -193,20 +199,22 @@
 
     (let ((result
 	    (cond
-	      ((/= (aref counts 0) 0) yellowWins)
-	      ((/= (aref counts 8) 0) orangeWins)
+	      ((/= (aref counts 0) 0)
+		yellowWins)
+	      ((/= (aref counts 8) 0)
+		orangeWins)
 	      (t
-		(the fixnum (-
+		(fast -
 		  (+
 		    (aref counts 5)
-		    (the fixnum (* 2 (aref counts 6)))
-		    (the fixnum (* 5 (aref counts 7)))
-		    (the fixnum (* 10 (aref counts 8))))
+		    (fast * 2 (aref counts 6))
+		    (fast * 5 (aref counts 7))
+		    (fast * 10 (aref counts 8)))
 		  (+
 		    (aref counts 3)
-		    (the fixnum (* 2 (aref counts 2)))
-		    (the fixnum (* 5 (aref counts 1)))
-		    (the fixnum (* 10 (aref counts 0))))))))))
+		    (fast * 2 (aref counts 2))
+		    (fast * 5 (aref counts 1))
+		    (fast * 10 (aref counts 0))))))))
       (declare (type fixnum result))
       result)))
 
@@ -226,6 +234,7 @@
   (let ((bestScore (cond (maximizeOrMinimize yellowWins) (t orangeWins)))
         (bestMove -1)
         (killerTarget (cond (maximizeOrMinimize orangeWins) (t yellowWins))))
+    (declare (type fixnum bestScore bestMove))
     (loop for column fixnum from 0 to (1- width) do
       (if (= 0 (at 0 column))
         (let ((rowFilled (dropDisk board column color))
@@ -242,11 +251,9 @@
                            (shiftedScore
                              ; when loss is certain, avoid forfeiting the match, by shifting scores by depth...
                              (if (or (= scoreInner orangeWins) (= scoreInner yellowWins))
-                               (- scoreInner (the fixnum (* depth color)))
+                               (- scoreInner (fast * depth color))
                                scoreInner)))
-		      (declare (type fixnum scoreInner))
-		      (declare (type fixnum shiftedScore))
-		      (declare (type fixnum *maxDepth*))
+		      (declare (type fixnum scoreInner shiftedScore *maxDepth*))
                       (setf (at rowFilled column) 0)
                       (if (and *debug* (= depth *maxDepth*))
                         (format t "Depth ~A, placing on ~A, Score:~A~%" depth column shiftedScore))
@@ -259,7 +266,7 @@
                           (progn
                             (setf bestScore shiftedScore)
                             (setf bestMove column)))))))))))
-    (list (the fixnum bestMove) (the fixnum bestScore))))
+    (list bestMove bestScore)))
 
 ;(* let any = List.fold_left (||) false
 ; * ..is slower than ... *)
