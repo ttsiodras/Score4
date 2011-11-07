@@ -1,0 +1,2 @@
+#!/bin/bash
+sbcl --load "Lisp/score4.cl" $@
