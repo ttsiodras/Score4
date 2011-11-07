@@ -269,6 +269,7 @@
     (list bestMove bestScore)))
 
 (defun loadboard (args)
+  (declare (type list args))
   (let ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
     (format t "~A~%" args)
     (loop for y fixnum from 0 to (1- height) do
@@ -288,7 +289,7 @@
     ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
     (setf (at 5 3) 1)
     (setf (at 4 3) -1)
-    (dotimes (n 10 nil)
+    (dotimes (n 10)
       (time (format t "~A" (minimax t 1 *maxDepth* board))))))
 
 (defun my-command-line ()
@@ -301,6 +302,7 @@
 (defun main ()
   (let ((args (my-command-line))
         (exitCode 0))
+    (declare (type list args))
     (cond
       ((<= (length args) 1)
         (progn
