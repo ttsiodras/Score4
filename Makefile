@@ -10,7 +10,7 @@ all:
 	@echo "        to play a console game of score4"
 	@echo 
 	@echo "    make benchmark"
-	@echo "        to benchmark the 4 languages (F#/C#/OCaml/C++)"
+	@echo "        to benchmark implementations (F#/C#/Java/OCaml/Lisp/C++/C)"
 	@echo 
 
 play:
