@@ -227,36 +227,29 @@
     (downright-spans)
     (downleft-spans)
 
-    (let ((result
-	    (cond
-	      ((/= (aref counts 0) 0)
-		yellowWins)
-	      ((/= (aref counts 8) 0)
-		orangeWins)
-	      (t
-		(fast -
-		  (+
-		    (aref counts 5)
-		    (fast * 2 (aref counts 6))
-		    (fast * 5 (aref counts 7))
-		    (fast * 10 (aref counts 8)))
-		  (+
-		    (aref counts 3)
-		    (fast * 2 (aref counts 2))
-		    (fast * 5 (aref counts 1))
-		    (fast * 10 (aref counts 0))))))))
-      (declare (type fixnum result))
-      result)))
+    (cond
+      ((/= (aref counts 0) 0) yellowWins)
+      ((/= (aref counts 8) 0) orangeWins)
+      (t (let* ((forOrange (+ (aref counts 5)
+                              (fast * 2 (aref counts 6))
+                              (fast * 5 (aref counts 7))
+                              (fast * 10 (aref counts 8))))
+                (forYellow (+ (aref counts 3)
+                              (fast * 2 (aref counts 2))
+                              (fast * 5 (aref counts 1))
+                              (fast * 10 (aref counts 0))))
+                (result (fast - forOrange forYellow)))
+           (declare (type fixnum forOrange forYellow result))
+           result)))))
 
 (declaim (inline dropDisk))
 (defun dropDisk (board column color)
   (declare (type (simple-array fixnum (48)) board) (type fixnum column color))
-  (loop for y fixnum from (1- height) downto 0 do
-    (cond
-      ((= 0 (at y column))
-        (progn
-          (setf (at y column) color)
-          (return-from dropDisk y)))))
+  (loop for y fixnum from (1- height) downto 0
+        do (cond ((= 0 (at y column))
+                  (progn
+                    (setf (at y column) color)
+                    (return-from dropDisk y)))))
   -1)
 
 (defun minimax (maximizeOrMinimize color depth board)
@@ -265,51 +258,51 @@
         (bestMove -1)
         (killerTarget (cond (maximizeOrMinimize orangeWins) (t yellowWins))))
     (declare (type fixnum bestScore bestMove))
-    (loop for column fixnum from 0 to (1- width) do
-      (if (= 0 (at 0 column))
-        (let ((rowFilled (dropDisk board column color))
-              (s (scoreBoard board)))
-          (cond
-            ((= s killerTarget) (progn
-                                  (setf (at rowFilled column) 0)
-                                  (return-from minimax (list column s))))
-            (t (progn
-                 (let* ((result (cond
-                                   ((= depth 1) (list column s))
-                                   (t (minimax (not maximizeOrMinimize) (- color) (1- depth) board))))
-                           (scoreInner (cadr result))
-                           (shiftedScore
-                             ; when loss is certain, avoid forfeiting the match, by shifting scores by depth...
-                             (if (or (= scoreInner orangeWins) (= scoreInner yellowWins))
-                               (- scoreInner (fast * depth color))
-                               scoreInner)))
-		      (declare (type fixnum scoreInner shiftedScore *maxDepth*))
-                      (setf (at rowFilled column) 0)
-                      (if (and *debug* (= depth *maxDepth*))
-                        (format t "Depth ~A, placing on ~A, Score:~A~%" depth column shiftedScore))
-                      (if maximizeOrMinimize
-                        (if (>= shiftedScore bestScore)
-                          (progn
-                            (setf bestScore shiftedScore)
-                            (setf bestMove column)))
-                        (if (<= shiftedScore bestScore)
-                          (progn
-                            (setf bestScore shiftedScore)
-                            (setf bestMove column)))))))))))
+    (loop for column fixnum from 0 to (1- width)
+          do (if (= 0 (at 0 column))
+               (let ((rowFilled (dropDisk board column color))
+                     (s (scoreBoard board)))
+                 (cond
+                   ((= s killerTarget) (progn
+                                         (setf (at rowFilled column) 0)
+                                         (return-from minimax (list column s))))
+                   (t (progn
+                        (let* ((result (cond
+                                         ((= depth 1) (list column s))
+                                         (t (minimax (not maximizeOrMinimize) (- color) (1- depth) board))))
+                               (scoreInner (cadr result))
+                               (shiftedScore
+                                 ; when loss is certain, avoid forfeiting the match, by shifting scores by depth...
+                                 (if (or (= scoreInner orangeWins) (= scoreInner yellowWins))
+                                   (- scoreInner (fast * depth color))
+                                   scoreInner)))
+                          (declare (type fixnum scoreInner shiftedScore *maxDepth*))
+                          (setf (at rowFilled column) 0)
+                          (if (and *debug* (= depth *maxDepth*))
+                            (format t "Depth ~A, placing on ~A, Score:~A~%" depth column shiftedScore))
+                          (if maximizeOrMinimize
+                            (if (>= shiftedScore bestScore)
+                              (progn
+                                (setf bestScore shiftedScore)
+                                (setf bestMove column)))
+                            (if (<= shiftedScore bestScore)
+                              (progn
+                                (setf bestScore shiftedScore)
+                                (setf bestMove column)))))))))))
     (list bestMove bestScore)))
 
 (defun loadboard (args)
   (declare (type list args))
   (let ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
     (format t "~A~%" args)
-    (loop for y fixnum from 0 to (1- height) do
-      (loop for x fixnum from 0 to (1- width) do
-        (let ((orange (format nil "o~A~A" y x))
-              (yellow (format nil "y~A~A" y x)))
-          (if (find orange args :test #'equal)
-            (setf (at y x) 1))
-          (if (find yellow args :test #'equal)
-            (setf (at y x) -1)))))
+    (loop for y fixnum from 0 to (1- height)
+          do (loop for x fixnum from 0 to (1- width)
+                   do (let ((orange (format nil "o~A~A" y x))
+                            (yellow (format nil "y~A~A" y x)))
+                        (if (find orange args :test #'equal)
+                          (setf (at y x) 1))
+                        (if (find yellow args :test #'equal)
+                          (setf (at y x) -1)))))
     board))
 
 (defun bench ()
@@ -334,30 +327,32 @@
         (exitCode 0))
     (declare (type list args))
     (cond
+      ; no arguments?
       ((<= (length args) 1)
-        (progn
-	  (format t "Benchmarking...~%")
-	  (bench)))
-      (t
-	(let* ((board (loadboard args))
-               (scoreOrig (scoreBoard board)))
-          (if (find "-debug" args :test #'equal)
-            (setf *debug* t))
-          (if *debug*
-            (format t "Starting score: ~A~%" scoreOrig))
-          (cond
-            ((= scoreOrig orangeWins)
-             (progn
-               (print "I win")
-               (setf exitCode -1)))
-            ((= scoreOrig yellowWins)
-             (progn
-               (print "You win")
-               (setf exitCode -1)))
-            (t
-              (let ((result (minimax t 1 *maxDepth* board)))
-                (format t "~A~%" (car result))
-                (setf exitCode 0)))))))
+       ; then benchmark speed
+           (progn
+             (format t "Benchmarking...~%")
+             (bench)))
+      ; parse board from arguments...
+      (t (let* ((board (loadboard args))
+                (scoreOrig (scoreBoard board)))
+           ; set debug mode if user requested it
+           (if (find "-debug" args :test #'equal)
+             (setf *debug* t))
+           (if *debug* (format t "Starting score: ~A~%" scoreOrig))
+           ; check if we are already in win/lose board
+           (cond ((= scoreOrig orangeWins)
+                  (progn
+                    (print "I win")
+                    (setf exitCode -1)))
+                 ((= scoreOrig yellowWins)
+                  (progn
+                    (print "You win")
+                    (setf exitCode -1)))
+                 ; we're not win/lose, we need to minimax
+                 (t (let ((result (minimax t 1 *maxDepth* board)))
+                      (format t "~A~%" (car result))
+                      (setf exitCode 0)))))))
     exitCode))
 
 (main)
