@@ -50,14 +50,18 @@
   ;
   `(progn
     (let ((score 0))
-    (declare (type fixnum score))
-    ,@(loop for y fixnum from 0 to (1- height)
-      collect `(setf score (+ (at ,y 0) (at ,y 1) (at ,y 2)))
-      nconc (loop for x fixnum from 3 to (1- width)
-        collect `(incf score (at ,y ,x))
-        collect `(myincr)
-        collect `(decf score (at ,y ,(- x 3)))
-        )))))
+      (declare (type fixnum score))
+      ,@(loop for y fixnum from 0 to (1- height)
+              ; first 3 of the total 4 cells
+              collect `(setf score (+ (at ,y 0) (at ,y 1) (at ,y 2)))
+              nconc (loop for x fixnum from 3 to (1- width)
+                          ; add the 4th one
+                          collect `(incf score (at ,y ,x))
+                          ; update counts
+                          collect `(myincr)
+                          ; if we re still in bounds, remove 1st of the old 4
+                          ;if (/= x (1- width))
+                          collect `(decf score (at ,y ,(- x 3))))))))
 
 (defmacro vertical-spans ()
   ; normal code is...
@@ -73,15 +77,19 @@
   ; Loop-unrolling done via this macro:
   ;
   `(progn
-    (let ((score 0))
-    (declare (type fixnum score))
-    ,@(loop for x fixnum from 0 to (1- width)
-      collect `(setf score (+ (at 0 ,x) (at 1 ,x) (at 2 ,x)))
-      nconc (loop for y fixnum from 3 to (1- height)
-        collect `(incf score (at ,y ,x))
-        collect `(myincr)
-        collect `(decf score (at ,(- y 3) ,x))
-        )))))
+     (let ((score 0))
+       (declare (type fixnum score))
+       ,@(loop for x fixnum from 0 to (1- width)
+              ; first 3 of the total 4 cells
+               collect `(setf score (+ (at 0 ,x) (at 1 ,x) (at 2 ,x)))
+               nconc (loop for y fixnum from 3 to (1- height)
+                           ; add the 4th one
+                           collect `(incf score (at ,y ,x))
+                           ; update counts
+                           collect `(myincr)
+                           ; if we re still in bounds, remove 1st of the old 4
+                           ;if (/= y (1- height))
+                           collect `(decf score (at ,(- y 3) ,x)))))))
 
 (defmacro downright-spans ()
   ;normal code is...
