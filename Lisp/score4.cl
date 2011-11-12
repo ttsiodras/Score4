@@ -59,7 +59,7 @@
                           ; update counts
                           collect `(myincr)
                           ; if we re still in bounds, remove 1st of the old 4
-                          ;if (/= x (1- width))
+                          if (/= x (1- width))
                           collect `(decf score (at ,y ,(- x 3))))))))
 
 (defmacro vertical-spans ()
@@ -87,7 +87,7 @@
                            ; update counts
                            collect `(myincr)
                            ; if we re still in bounds, remove 1st of the old 4
-                           ;if (/= y (1- height))
+                           if (/= y (1- height))
                            collect `(decf score (at ,(- y 3) ,x)))))))
 
 (defmacro downright-spans ()
