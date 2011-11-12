@@ -15,9 +15,8 @@
   `(the fixnum ,args))
 
 (defmacro at (y x)
-  ; we emulate a 6x7 board with a 6x8 = 48 one-dimensional one
-  ; we use 8x and not 7x, because it's faster for SBCL :-)
-  `(aref board (fast + (fast * 8 ,y) ,x)))
+  ; we emulate a 6x7 board with a 6x7 = 42 one-dimensional one
+  `(aref board (fast + (fast * 7 ,y) ,x)))
 
 ; The scoreBoard function adds the board values on 4 consecutive
 ; cells, and therefore the result spans from -4 to 4 (9 values)
@@ -210,7 +209,7 @@
 
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
-  (declare (type (simple-array fixnum (48)) board))
+  (declare (type (simple-array fixnum (42)) board))
   (let ((counts (make-array '(9) :initial-element 0 :element-type 'fixnum)))
 
     ; we add the board values on 4 consecutive cells, and therefore
@@ -244,7 +243,7 @@
 
 (declaim (inline dropDisk))
 (defun dropDisk (board column color)
-  (declare (type (simple-array fixnum (48)) board) (type fixnum column color))
+  (declare (type (simple-array fixnum (42)) board) (type fixnum column color))
   (loop for y fixnum from (1- height) downto 0
         do (cond ((= 0 (at y column))
                   (progn
@@ -253,7 +252,7 @@
   -1)
 
 (defun minimax (maximizeOrMinimize color depth board)
-  (declare (type fixnum color depth) (type (simple-array fixnum (48)) board))
+  (declare (type fixnum color depth) (type (simple-array fixnum (42)) board))
   (let ((bestScore (cond (maximizeOrMinimize yellowWins) (t orangeWins)))
         (bestMove -1)
         (killerTarget (cond (maximizeOrMinimize orangeWins) (t yellowWins))))
@@ -293,7 +292,7 @@
 
 (defun loadboard (args)
   (declare (type list args))
-  (let ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
+  (let ((board (make-array 42 :initial-element 0 :element-type 'fixnum)))
     (format t "~A~%" args)
     (loop for y fixnum from 0 to (1- height)
           do (loop for x fixnum from 0 to (1- width)
@@ -307,9 +306,8 @@
 
 (defun bench ()
   (let
-    ; we emulate a 6x7 board with a 6x8 = 48 one-dimensional one
-    ; we use 8x and not 7x, because it's faster for SBCL :-)
-    ((board (make-array 48 :initial-element 0 :element-type 'fixnum)))
+    ; we emulate a 6x7 board with a 6x7 = 42 one-dimensional one
+    ((board (make-array 42 :initial-element 0 :element-type 'fixnum)))
     (setf (at 5 3) 1)
     (setf (at 4 3) -1)
     (dotimes (n 10)
