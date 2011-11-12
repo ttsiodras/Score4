@@ -92,52 +92,121 @@
                            collect `(decf score (at ,(- y 3) ,x)))))))
 
 (defmacro downright-spans ()
-  ;normal code is...
-  ;
-  ;  (loop for y fixnum from 0 to (- height 4) do
-  ;    (loop for x fixnum from 0 to (- width 4) do
-  ;      (let ((score 0))
-  ;        (declare (type fixnum score))
-  ;        (loop for idx fixnum from 0 to 3 do
-  ;          (incf score (at (+ y idx) (+ x idx))))
-  ;        (myincr))))
-  ;
-  ; Loop-unrolling done via this macro:
-  ;
-  `(progn
-    (let ((score 0))
-    (declare (type fixnum score))
-    ,@(loop for y fixnum from 0 to (- height 4)
-      nconc (loop for x fixnum from 0 to (- width 4)
-        collect `(setf score 0)
-        nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(fast + y idx) ,(fast + x idx))))
-      collect `(myincr)
-      )))))
+;
+;  normal code is...
+;
+;    (loop for y fixnum from 0 to (- height 4) do
+;      (loop for x fixnum from 0 to (- width 4) do
+;        (let ((score 0))
+;          (declare (type fixnum score))
+;          (loop for idx fixnum from 0 to 3 do
+;            (incf score (at (+ y idx) (+ x idx))))
+;          (myincr))))
+;
+;   1st generation loop-unrolling done via this macro:
+;
+;  `(progn
+;    (let ((score 0))
+;    (declare (type fixnum score))
+;    ,@(loop for y fixnum from 0 to (- height 4)
+;      nconc (loop for x fixnum from 0 to (- width 4)
+;        collect `(setf score 0)
+;        nconc (loop for idx fixnum from 0 to 3
+;        collect `(incf score (at ,(fast + y idx) ,(fast + x idx))))
+;      collect `(myincr)
+;      )))))
+;
+;  Final version: incrementally create the score4 values,
+;  keeping score as you move down right
+;
+;  - accumulate first 4
+;  - update counts
+;  - remove the 1st of the 4 cells
+;  - move down-right
+;  - add the new cell
+;  - update the counts
+;  etc
 
-(defmacro upright-spans ()
-  ;normal code is...
-  ;
-  ;  (loop for y fixnum from 3 to (1- height) do
-  ;    (loop for x fixnum from 0 to (- width 4) do
-  ;      (let ((score 0))
-  ;        (declare (type fixnum score))
-  ;        (loop for idx fixnum from 0 to 3 do
-  ;          (incf score (at (- y idx) (+ x idx))))
-  ;        (myincr))))
-  ;
-  ; Loop-unrolling done via this macro:
-  ;
-  `(progn
-    (let ((score 0))
-    (declare (type fixnum score))
-    ,@(loop for y fixnum from 3 to (1- height)
-      nconc (loop for x fixnum from 0 to (- width 4)
-        collect `(setf score 0)
-        nconc (loop for idx fixnum from 0 to 3
-        collect `(incf score (at ,(fast - y idx) ,(fast + x idx))))
-      collect `(myincr)
-      )))))
+  (let ((y 0)
+        (x 0))
+    (declare (type fixnum y x))
+    `(progn
+       (let ((score 0))
+         (declare (type fixnum score))
+         ; anchors to start calculating score4s while moving down right
+         ,@(let ((dr '((2 0) (1 0) (0 0) (0 1) (0 2) (0 3))))
+             (loop for startposTuple in dr
+                   do (setf y (car startposTuple)) (setf x (cadr startposTuple))
+                   ; first 3 of the total 4 cells
+                   collect `(setf score (fast + (at ,y ,x) (at ,(fast 1+ y) ,(fast 1+ x)) (at ,(fast + y 2) ,(fast + x 2))))
+                   nconc (loop while (and (<= (+ y 3) (1- height)) (<= (+ x 3) (1- width)))
+                               ; add the 4th one
+                               collect `(incf score (at ,(fast + y 3) ,(fast + x 3)))
+                               ; update counts
+                               collect `(myincr)
+                               ; move to next cell
+                               do (incf y) (incf x)
+                               ; if we re still in bounds, remove 1st of the old 4
+                               if (and (<= (+ y 3) (1- height)) (<= (+ x 3) (1- width)))
+                               collect `(decf score (at ,(fast 1- y) ,(fast 1- x))))))))))
+
+(defmacro downleft-spans ()
+;
+;  normal code is...
+;
+;    (loop for y fixnum from 3 to (1- height) do
+;      (loop for x fixnum from 0 to (- width 4) do
+;        (let ((score 0))
+;          (declare (type fixnum score))
+;          (loop for idx fixnum from 0 to 3 do
+;            (incf score (at (- y idx) (+ x idx))))
+;          (myincr))))
+;
+;  1st generation of loop-unrolling done via this macro:
+;
+;  `(progn
+;    (let ((score 0))
+;    (declare (type fixnum score))
+;    ,@(loop for y fixnum from 3 to (1- height)
+;      nconc (loop for x fixnum from 0 to (- width 4)
+;        collect `(setf score 0)
+;        nconc (loop for idx fixnum from 0 to 3
+;        collect `(incf score (at ,(fast - y idx) ,(fast + x idx))))
+;      collect `(myincr))))))
+;
+;  Final version: incrementally create the score4 values,
+;  keeping score as you move down left
+;
+;  - accumulate first 4
+;  - update counts
+;  - remove the 1st of the 4 cells
+;  - move down-left
+;  - add the new cell
+;  - update the counts
+;  etc
+
+  (let ((y 0)
+        (x 0))
+    (declare (type fixnum y x))
+    `(progn
+       (let ((score 0))
+         (declare (type fixnum score))
+         ; anchors to start calculating score4s while moving down left
+         ,@(let ((dl '((0 3) (0 4) (0 5) (0 6) (1 6) (2 6))))
+             (loop for startposTuple in dl
+                   do (setf y (car startposTuple)) (setf x (cadr startposTuple))
+                   ; first 3 of the total 4 cells
+                   collect `(setf score (fast + (at ,y ,x) (at ,(fast 1+ y) ,(fast 1- x)) (at ,(fast + y 2) ,(fast - x 2))))
+                   nconc (loop while (and (<= (+ y 3) (1- height)) (>= (- x 3) 0))
+                               ; add the 4th one
+                               collect `(incf score (at ,(fast + y 3) ,(fast - x 3)))
+                               ; update counts
+                               collect `(myincr)
+                               ; move to next cell
+                               do (incf y) (decf x)
+                               ; if we re still in bounds, remove 1st of the old 4
+                               if (and (<= (+ y 3) (1- height)) (>= (- x 3) 0))
+                               collect `(decf score (at ,(fast 1- y) ,(fast 1+ x))))))))))
 
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
@@ -156,54 +225,7 @@
     (horizontal-spans)
     (vertical-spans)
     (downright-spans)
-    (upright-spans)
-
-;
-;For down-right and up-left diagonals, I also tried this incremental version
-;of the diagonal scores calculations... It is doing less computation than
-;the alternative above, but unfortunately, the use of the two tuple lists
-;makes the overall results worse in my Celeron E3400... I suspect
-;because the access to the list triggers cache misses.
-;
-;Outside, in global space:
-;
-;    ; anchors to start calculating scores while moving down right *)
-;    let dr = [| (2,0);(1,0);(0,0);(0,1);(0,2);(0,3) |]
-;    ; anchors to start calculating scores while moving down left *)
-;    let dl = [| (0,3);(0,4);(0,5);(0,6);(1,6);(2,6) |]
-;
-;And in this function, using the anchors to do the calculation incrementally,
-;just as we do for vertical and horizontal spaces:
-;
-;    ; Down-right (and up-left) diagonals *)
-;    for idx=0 to 5 do
-;        let (yinit, xinit) = dr.(idx) in
-;        let y = ref yinit in
-;        let x = ref xinit in
-;        let score = ref (board.(!y).(!x) + board.(!y + 1).(!x + 1) + board.(!y + 2).(!x + 2)) in
-;        while !y+3<=height-1 && !x+3<=width-1 do
-;            score := !score + board.(!y+3).(!x+3) ;
-;            myincr counts (!score+4) ;
-;            score := !score - board.(!y).(!x) ;
-;            y := !y+1 ;
-;            x := !x+1 ;
-;        done
-;    done ;
-;
-;    ; Down-left (and up-right) diagonals *)
-;    for idx=0 to 5 do
-;        let (yinit, xinit) = dl.(idx) in
-;        let y = ref yinit in
-;        let x = ref xinit in
-;        let score = ref (board.(!y).(!x) + board.(!y + 1).(!x - 1) + board.(!y + 2).(!x - 2)) in
-;        while !y+3<=height-1 && !x-3>=0 do
-;            score := !score + board.(!y+3).(!x-3) ;
-;            myincr counts (!score+4) ;
-;            score := !score - board.(!y).(!x) ;
-;            y := !y+1 ;
-;            x := !x-1 ;
-;        done
-;    done ;
+    (downleft-spans)
 
     (let ((result
 	    (cond
