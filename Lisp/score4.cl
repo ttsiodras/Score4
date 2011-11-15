@@ -11,12 +11,13 @@
 ; in the same vein (speed) we need (in many places) to specify
 ; that the result of an operation fits in a fixnum
 ; so we macro (the fixnum (...))
-(defmacro fast (&rest args)
-  `(the fixnum ,args))
+(defmacro fast (&rest sexpr)
+  `(,@(clone sexpr)))
 
 (defmacro at (y x)
   ; we emulate a 6x7 board with a 6x7 = 42 one-dimensional one
-  `(aref board (fast + (fast * 7 ,y) ,x)))
+  (let ((final (clone (list '+ (list '* 7 y) x))))
+    `(aref board ,final)))
 
 ; The scoreBoard function adds the board values on 4 consecutive
 ; cells, and therefore the result spans from -4 to 4 (9 values)
@@ -229,14 +230,14 @@
     (cond
       ((/= (aref counts 0) 0) yellowWins)
       ((/= (aref counts 8) 0) orangeWins)
-      (t (let* ((forOrange (+ (aref counts 5)
-                              (fast * 2 (aref counts 6))
-                              (fast * 5 (aref counts 7))
-                              (fast * 10 (aref counts 8))))
-                (forYellow (+ (aref counts 3)
-                              (fast * 2 (aref counts 2))
-                              (fast * 5 (aref counts 1))
-                              (fast * 10 (aref counts 0))))
+      (t (let* ((forOrange (fast + (aref counts 5)
+                              (* 2 (aref counts 6))
+                              (* 5 (aref counts 7))
+                              (* 10 (aref counts 8))))
+                (forYellow (fast + (aref counts 3)
+                              (* 2 (aref counts 2))
+                              (* 5 (aref counts 1))
+                              (* 10 (aref counts 0))))
                 (result (fast - forOrange forYellow)))
            (declare (type fixnum forOrange forYellow result))
            result)))))
@@ -353,8 +354,8 @@
                       (setf exitCode 0)))))))
     exitCode))
 
-(main)
-(or #+SBCL (quit))
+;(main)
+;(or #+SBCL (quit))
 
 ; to create a standalone executable with SBCL, comment out the quit above,
 ; then...
