@@ -7,8 +7,8 @@ The goal is to form horizontal, vertical or diagonal series of
 4 of your chips (green). The computer tries to do the same, using
 red chips.
 
-The GNU-licensed code includes F#, OCaml, C# and C++ implementations, 
-using both functional and imperative styles of coding. 
+The GNU-licensed code includes C, C++, OCaml, F#, C# and Lisp 
+implementations, using both functional and imperative styles of coding. 
 Ports are coming in from all over the Web to many more languages
 (so far: Java, Python, Haskell, Go, D)
 
@@ -29,7 +29,7 @@ To fiddle with the sources:
         to play a console game of score4
 
     make benchmark
-        to benchmark the 4 languages (F#/C#/OCaml/C++)
+        to benchmark the languages
 
 3. The "make play" controls:
 
