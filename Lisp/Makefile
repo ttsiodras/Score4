@@ -7,7 +7,7 @@ test:
 	@rm -f log
 	@echo -n 'Benchmarking imperative LISP (CMUCL) ...'
 	@cmucl -batch -quiet -load build-CMUCL.cl >log 2>compiler.notes || { echo missing ; rm -f log ; exit 0 ; }
-	@cmucl -batch -quiet -load bench-CMUCL.cl >log 2>compiler.notes || { echo failed ; rm -f log ; exit 0 ; }
+	@cmucl -batch -quiet -load bench-CMUCL.cl >log || { echo failed ; rm -f log ; exit 0 ; }
 	@if [ -s log ] ; then cat log | grep -A1 Eva | grep seconds | awk '{print $$2}' | ../stats.py  | grep ^Min | sed 's,^Min,,' ; fi
 	@rm -f log
 
