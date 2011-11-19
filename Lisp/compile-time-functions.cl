@@ -1,12 +1,6 @@
 
 (defun operation-p (x)
-  (or
-    (equal x '+)
-    (equal x '1+)
-    (equal x '-)
-    (equal x '1-)
-    (equal x '*)
-    (equal x '/)))
+  (member x '(+ 1+ - 1- * /)))
 
 (defun clone (sexpr)
   (cond 
