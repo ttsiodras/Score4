@@ -1,0 +1,42 @@
+mail sent from Phan Anh Dung:
+
+"Dear Dr.  Thanassis Tsiodras,
+
+Recently I have read your Score4 article and its implementations in different languages. The article interests me so much, so I take some time to play with F# functional implementation. I'm improving my F# skill; therefore, it is a beneficial exercise for me. Below is a summary of improvement I have done:
+
+1. Remove unnecessary allocation
+The idea is simple; I use high-order functions which take two lists as their arguments instead of creating zipped lists. In practice, map2, fold2 and iter2 are used quite often. In this way, we can avoid unnecessary allocation of many temporary lists.
+
+I changed [0..(WIDTH-1)] to List.init WIDTH id. Surprisingly, the first one creates a sequence and converts it to list. In the deep recursion of abMinimax, it has a really bad influence on performance. In case you wonder, id is a built-in function for fun x -> x.
+
+I also did some changes to make the code more functional, which I believe doesn't have influence on performance:
+- Use Array.exists rather than your any function.
+- Change dropDisk to use recursion, it's more flexible than for loop IMO.
+
+All of these changes are available in score4_functional_list.fs. These help to reduce execution time to 60% of the original functional version.
+
+2. Change representation from List to Array
+Since you don't use cons (::) constructor to do pattern matching or build new lists, it's better to use Array. Array keeps data continuously in memory, so its cache locality is better. Moreover, you have random access on array; I used this property to get rid of movesAndScores collection.
+
+These updates are in score4_functional_array.fs. The execution time now is around 57% of that of the original program.
+
+3. Reuse a board instead of creating many of them
+You can argue that this change is imperative. Yes, it has side effects. Since the core of the program is functional and side effects here are controllable, I think it's still much more readable than the imperative version. I did this change by update dropDisk function and create pickupDisk function to reverse side effects made by dropDisk. Therefore, a board will come back to its original state after we call a pair of dropDisk and pickupDisk.
+
+No surprise, this helps to reduce running time to 47% of the original variant. And it's only 12% slower than the imperative version. You can see this version in score4_functional_array_mutable.fs.
+
+I also update Makefile to run all versions together. Here is a typical run on my machine:
+
+Benchmarking imperative F# ... 0.325 sec
+Benchmarking functional F# ... 0.827 sec
+Benchmarking functional list F# ... 0.511 sec
+Benchmarking functional array F# ... 0.477 sec
+Benchmarking functional array mutable F# ... 0.374 sec
+
+
+Thank you for your patience reading this long email. I attach herewith all versions I have made. I hope some of these changes will be available in Github :). 
+
+Again thank you for writing such a great article. I have learned a lot when playing with this project. Have a nice weeked.
+
+Best regards,
+Phan Anh Dung"
