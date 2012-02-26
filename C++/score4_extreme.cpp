@@ -43,11 +43,6 @@ struct Board {
     Board() { memset(_slots, 0x55, sizeof(_slots)); }
 };
 
-bool inside(int y, int x)
-{
-    return y>=0 && y<height && x>=0 && x<width;
-}
-
 struct BoardHashFunction {
     ::std::size_t operator ()(const Board& data) const {
         // The 32-bit size_t will be formed from
