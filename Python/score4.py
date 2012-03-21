@@ -4,7 +4,6 @@
 # - PyPy 1.8...                  14.1 seconds
 # - Shedskin 0.9                 10.2 seconds
 # - PyPy 1.8 translating to C     0.7 seconds
-#   (reproduce this last result with "make pypy")
 
 from sys import argv
 
