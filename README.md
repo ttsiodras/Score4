@@ -1,8 +1,8 @@
-This is the code accompanying [my blog post](http://users.softlab.ntua.gr/~ttsiod/score4.html) about implementing Score4 (also called Connect4). The goal is to form horizontal, vertical or diagonal series of 4 of your chips (green). The computer tries to do the same, using red chips.
+This is the code accompanying [my blog post](http://users.softlab.ntua.gr/~ttsiod/score4.html) about implementing the game of *Score4* (also known as *Connect4*). The goal of the game is to form horizontal, vertical or diagonal series of 4 of your chips (green). The computer tries to do the same, using red chips.
 
-I've coded implementations in C, C++, OCaml, F#, C# and Lisp, using both functional and imperative styles of coding.  Ports also came from all over the Web to many more languages (so far: Java, Python, Haskell, Go, D). *Update, March 2012: **pypy** does an amazing job optimizing Python, bringing it up to the same level of performance as the rest*.
+I coded implementations of the game engine in C, C++, OCaml, F#, C# and Lisp, using both functional and imperative styles of coding.  Ports also came from all over the Web to many more languages (so far: Java, Python, Haskell, Go, D - see Hacker News discussion [here](http://news.ycombinator.com/item?id=2750894) and Reddit/programming discussion [here](http://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/)). *Update, March 2012: **pypy** did an amazing job optimizing the Python version, bringing it up to performance levels similar to the rest of them*.
 
-I've also [prepared a standalone windows binary](https://github.com/downloads/ttsiodras/Score4/Score4-win32.binary.zip) of the game (using py2exe for the PyGame Python GUI, and the C version of the game engine).
+I also [prepared a standalone windows binary](https://github.com/downloads/ttsiodras/Score4/Score4-win32.binary.zip) of the game - using py2exe for the PyGame Python GUI, and a MinGW-compiled binary of the C version of the game engine).
 
 To fiddle with the sources:
 
