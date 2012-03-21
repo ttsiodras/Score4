@@ -28,3 +28,8 @@ OCaml/common.cmx
 OCaml/common.o
 Lisp/compiler.notes
 Lisp/*.fasl
+F#/contrib.from.Phan.Anh.Dung/score4.exe
+F#/contrib.from.Phan.Anh.Dung/score4_functional.exe
+F#/contrib.from.Phan.Anh.Dung/score4_functional_array.exe
+F#/contrib.from.Phan.Anh.Dung/score4_functional_array_mutable.exe
+F#/contrib.from.Phan.Anh.Dung/score4_functional_list.exe
