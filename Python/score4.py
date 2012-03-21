@@ -1,6 +1,10 @@
-# Using python makes sense:
-# - if you use PyPy... (14 seconds on my PC, with F# at 8)
-# - if you use Shedskin (10 seconds on my PC!) 
+# Python results on my Arch Linux Celeron E3400:
+#
+# - Normal python 2.7            96.4 seconds
+# - PyPy 1.8...                  14.1 seconds
+# - Shedskin 0.9                 10.2 seconds
+# - PyPy 1.8 translating to C     0.7 seconds
+#   (reproduce this last result with "make pypy")
 
 from sys import argv
 
@@ -16,14 +20,19 @@ HEIGHT = 6
 ORANGE_WINS = 1000000
 YELLOW_WINS = -ORANGE_WINS
 
-g_max_depth = 7
-g_debug = False
+# pypy requires globals to be stored in singletons
+class Globals:
+    pass
+g = Globals()
+g.g_max_depth = 7
+g.g_debug = False
 
 
 class Cell:
     Barren = 0
     Orange = 1
     Yellow = -1
+
 
 def score_board(board):
     counters = [0] * 9
@@ -83,23 +92,19 @@ def drop_disk(board, column, color):
 
 
 def load_board(args):
-    global g_debug, g_max_depth
     new_board = [[Cell.Barren] * WIDTH for _ in xrange(HEIGHT)]
-
     for i, arg in enumerate(args[1:]):
         if arg[0] == 'o' or arg[0] == 'y':
             new_board[ord(arg[1]) - ord('0')][ord(arg[2]) - ord('0')] = \
                 Cell.Orange if arg[0] == 'o' else Cell.Yellow
         elif arg == "-debug":
-            g_debug = True
+            g.g_debug = True
         elif arg == "-level" and i < (len(args) - 2):
-            g_max_depth = int(args[i + 2])
-
+            g.g_max_depth = int(args[i + 2])
     return new_board
 
 
 def ab_minimax(maximize_or_minimize, color, depth, board):
-    global g_max_depth, g_debug
     if depth == 0:
         return (-1, score_board(board))
     else:
@@ -122,7 +127,7 @@ def ab_minimax(maximize_or_minimize, color, depth, board):
                                      Cell.Yellow if color == Cell.Orange else Cell.Orange,
                                      depth - 1, board)
             board[rowFilled][column] = Cell.Barren
-            if depth == g_max_depth and g_debug:
+            if depth == g.g_max_depth and g.g_debug:
                 print "Depth %d, placing on %d, score:%d" % (depth, column, score)
             if maximize_or_minimize:
                 if score >= best_score:
@@ -137,7 +142,6 @@ def ab_minimax(maximize_or_minimize, color, depth, board):
 
 
 def main(args):
-    global g_max_depth
     board = load_board(args)
     score_orig = score_board(board)
 
@@ -148,7 +152,7 @@ def main(args):
         print "You win."
         return -1
     else:
-        move, score = ab_minimax(True, Cell.Orange, g_max_depth, board)
+        move, score = ab_minimax(True, Cell.Orange, g.g_max_depth, board)
 
         if move != -1:
             print move
@@ -167,4 +171,10 @@ def main(args):
             return -1
 
 
-exit(main(argv))
+def target(*_):
+    '''Pypy information about entrypoint'''
+    return main, None
+
+
+if __name__ == "__main__":
+    exit(main(argv))
