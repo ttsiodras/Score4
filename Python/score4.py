@@ -5,7 +5,7 @@
 # - Shedskin 0.9                 10.2 seconds
 # - PyPy 1.8 translating to C     0.7 seconds
 
-from sys import argv
+from sys import argv, exit
 
 # remove this "psyco" part if you use Shedskin
 try:
