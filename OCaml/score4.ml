@@ -3,33 +3,33 @@ open Common;;
 exception NoMoreWork of int
 
 let dropDisk board column color =
-    try begin
+    try (
         for y=height-1 downto 0 do
-            if board.(y).(column) = 0 then begin
+            if board.(y).(column) = 0 then (
                 board.(y).(column) <- color ;
                 raise (NoMoreWork y)
-            end
+            )
         done ;
         -1
-    end with NoMoreWork y -> y
+    ) with NoMoreWork y -> y
 
 exception FoundKillerMove of int*int  (* column to drop, score achieved *)
 
 let rec abMinimax maximizeOrMinimize color depth board =
-    try begin
+    try (
 	let startingScore = match maximizeOrMinimize with true -> -10000000 | false -> 10000000 in
 	let bestScore = ref startingScore in
 	let bestMove = ref (-1) in
 	let killerTarget = match maximizeOrMinimize with true -> orangeWins | false -> yellowWins in
 	for column=0 to width-1 do
 	    if board.(0).(column) = 0 then
-	    begin
+	    (
 		let rowFilled = dropDisk board column color in
 		let s = scoreBoard board in
-		if s = killerTarget then begin
+		if s = killerTarget then (
 		    board.(rowFilled).(column) <- 0 ;
 		    raise (FoundKillerMove (column,s))
-		end else begin
+		) else (
 		    let pair =
 			if depth == 1 then
 			    (Some(-1),s)
@@ -46,22 +46,22 @@ let rec abMinimax maximizeOrMinimize color depth board =
 			if depth = maxDepth && !debug then
 			    Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column shiftedScore ;
 			if maximizeOrMinimize then
-			begin
-			    if shiftedScore>= !bestScore then begin
+			(
+			    if shiftedScore>= !bestScore then (
 				bestScore := shiftedScore ; bestMove := column
-			    end
-			end
+                            )
+			)
 			else
-			begin
-			    if shiftedScore<= !bestScore then begin
+			(
+			    if shiftedScore<= !bestScore then (
 				bestScore := shiftedScore ; bestMove := column
-			    end
-			end
-		end
-	    end
+                            )
+			)
+		)
+	    )
 	done ;
 	(Some(!bestMove),!bestScore)
-    end
+    )
         with FoundKillerMove (move,score) -> (Some(move),score)
 
 (* let any = List.fold_left (||) false
@@ -97,13 +97,13 @@ let _ =
     debug := inArgs Sys.argv "-debug" ;
     if !debug then
         Printf.printf "Starting score: %d\n" scoreOrig ;
-    if scoreOrig = orangeWins then begin
+    if scoreOrig = orangeWins then (
         Printf.printf "I win\n" ;
         (-1)
-    end else if scoreOrig = yellowWins then begin
+    ) else if scoreOrig = yellowWins then (
         Printf.printf "You win\n" ;
         (-1)
-    end else
+    ) else
         let mv,score = abMinimax true 1 maxDepth board in
         match mv with
         | Some column -> Printf.printf "%d\n" column ; 0
