@@ -19,6 +19,7 @@ HEIGHT = 6
 ORANGE_WINS = 1000000
 YELLOW_WINS = -ORANGE_WINS
 
+
 # pypy requires globals to be stored in singletons
 class Globals:
     pass
