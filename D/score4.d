@@ -149,12 +149,12 @@ struct Score4 {
                 break;
             }
 
-	    if (depth>1) {
-		auto res = abMinimax(!maximizeOrMinimize,
+            if (depth>1) {
+                auto res = abMinimax(!maximizeOrMinimize,
                                      color == Cell.Orange ? Cell.Yellow : Cell.Orange,
                                      depth - 1);
-		score = res.score;
-	    }
+                score = res.score;
+            }
             board[rowFilled][column] = Cell.Empty;
 
             // when loss is certain, avoid forfeiting the match,

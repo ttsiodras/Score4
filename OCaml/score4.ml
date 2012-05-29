@@ -17,50 +17,50 @@ exception FoundKillerMove of int*int  (* column to drop, score achieved *)
 
 let rec abMinimax maximizeOrMinimize color depth board =
     try (
-	let startingScore = match maximizeOrMinimize with true -> -10000000 | false -> 10000000 in
-	let bestScore = ref startingScore in
-	let bestMove = ref (-1) in
-	let killerTarget = match maximizeOrMinimize with true -> orangeWins | false -> yellowWins in
-	for column=0 to width-1 do
-	    if board.(0).(column) = 0 then
-	    (
-		let rowFilled = dropDisk board column color in
-		let s = scoreBoard board in
-		if s = killerTarget then (
-		    board.(rowFilled).(column) <- 0 ;
-		    raise (FoundKillerMove (column,s))
-		) else (
-		    let pair =
-			if depth == 1 then
-			    (Some(-1),s)
-			else
-			    abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1) board in
-		    match pair with
-		    | (moveInner,scoreInner) ->
-			board.(rowFilled).(column) <- 0 ;
-			(* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
-			let shiftedScore =
-			    match scoreInner with
-			    | 1000000 | -1000000 -> scoreInner - depth*color
-			    | _ -> scoreInner in
-			if depth = maxDepth && !debug then
-			    Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column shiftedScore ;
-			if maximizeOrMinimize then
-			(
-			    if shiftedScore>= !bestScore then (
-				bestScore := shiftedScore ; bestMove := column
+        let startingScore = match maximizeOrMinimize with true -> -10000000 | false -> 10000000 in
+        let bestScore = ref startingScore in
+        let bestMove = ref (-1) in
+        let killerTarget = match maximizeOrMinimize with true -> orangeWins | false -> yellowWins in
+        for column=0 to width-1 do
+            if board.(0).(column) = 0 then
+            (
+                let rowFilled = dropDisk board column color in
+                let s = scoreBoard board in
+                if s = killerTarget then (
+                    board.(rowFilled).(column) <- 0 ;
+                    raise (FoundKillerMove (column,s))
+                ) else (
+                    let pair =
+                        if depth == 1 then
+                            (Some(-1),s)
+                        else
+                            abMinimax (not maximizeOrMinimize) (otherColor color) (depth-1) board in
+                    match pair with
+                    | (moveInner,scoreInner) ->
+                        board.(rowFilled).(column) <- 0 ;
+                        (* when loss is certain, avoid forfeiting the match, by shifting scores by depth... *)
+                        let shiftedScore =
+                            match scoreInner with
+                            | 1000000 | -1000000 -> scoreInner - depth*color
+                            | _ -> scoreInner in
+                        if depth = maxDepth && !debug then
+                            Printf.printf "Depth %d, placing on %d, Score:%d\n%!" depth column shiftedScore ;
+                        if maximizeOrMinimize then
+                        (
+                            if shiftedScore>= !bestScore then (
+                                bestScore := shiftedScore ; bestMove := column
                             )
-			)
-			else
-			(
-			    if shiftedScore<= !bestScore then (
-				bestScore := shiftedScore ; bestMove := column
+                        )
+                        else
+                        (
+                            if shiftedScore<= !bestScore then (
+                                bestScore := shiftedScore ; bestMove := column
                             )
-			)
-		)
-	    )
-	done ;
-	(Some(!bestMove),!bestScore)
+                        )
+                )
+            )
+        done ;
+        (Some(!bestMove),!bestScore)
     )
         with FoundKillerMove (move,score) -> (Some(move),score)
 

@@ -23,14 +23,14 @@ namespace score4
             // Initially, this was Mycell[,]
             // Unfortunately, C# 2D arrays are a lot slower
             // than simple arrays of arrays (Jagged arrays): Mycell[][]
-	    // BUT
-	    // using a 1D array is EVEN faster:
-	    //    _slots[width*Y + X]
-	    // is much faster than
-	    //    _slots[Y][X]
-	    //
-	    // (sigh) Oh well, C# is a VM-based language (specifically, .NET).
-	    // Running fast is not the primary concern in VMs...
+            // BUT
+            // using a 1D array is EVEN faster:
+            //    _slots[width*Y + X]
+            // is much faster than
+            //    _slots[Y][X]
+            //
+            // (sigh) Oh well, C# is a VM-based language (specifically, .NET).
+            // Running fast is not the primary concern in VMs...
             public Mycell[] _slots;
             public Board()
             {
@@ -150,12 +150,12 @@ namespace score4
                         break;
                     }
                     int moveInner, scoreInner;
-		    if (depth>1)
-			abMinimax(!maximizeOrMinimize, color==Mycell.Orange?Mycell.Yellow:Mycell.Orange, depth-1, board, out moveInner, out scoreInner);
-		    else {
-			moveInner = -1;
-			scoreInner = s;
-		    }
+                    if (depth>1)
+                        abMinimax(!maximizeOrMinimize, color==Mycell.Orange?Mycell.Yellow:Mycell.Orange, depth-1, board, out moveInner, out scoreInner);
+                    else {
+                        moveInner = -1;
+                        scoreInner = s;
+                    }
                     board._slots[width*(rowFilled)+column] = Mycell.Barren;
                     /* when loss is certain, avoid forfeiting the match, by shifting scores by depth... */
                     if (scoreInner == orangeWins || scoreInner == yellowWins)
