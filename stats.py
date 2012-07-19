@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 import math
 total=totalSq=n=0
 allOfThem = []
