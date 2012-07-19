@@ -9,6 +9,6 @@ clean:
 	rm -f $(TARGET) score4.hi score4.o
 
 test:	|all
-	sh -c "time ./$(TARGET) o53 y43 -debug"
+	bash -c "time ./$(TARGET) o53 y43 -debug"
 	@echo "That was Haskell (functional,lazy)"
 	@echo "=================================="

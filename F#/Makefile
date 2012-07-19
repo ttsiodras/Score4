@@ -16,8 +16,8 @@ all:	$(TARGETS)
 	$(MONO) $(FSHARPCOMPILER) --checked- --optimize+ $^
 
 test:	| all
-	@echo -n 'Benchmarking imperative F# ...' ; for i in {1..10} ; do sh -c "time $(MONO) ./score4.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
-	@echo -n 'Benchmarking functional F# ...' ; for i in {1..10} ; do sh -c "time $(MONO) ./score4_functional.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative F# ...' ; for i in {1..10} ; do bash -c "time $(MONO) ./score4.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking functional F# ...' ; for i in {1..10} ; do bash -c "time $(MONO) ./score4_functional.exe o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
 
 clean:
 	rm -f $(TARGETS)

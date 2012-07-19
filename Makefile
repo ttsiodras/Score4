@@ -1,4 +1,4 @@
-DIRS:=C++ C Lisp Java OCaml "C\#" "F\#" Python
+DIRS:=C++ C Lisp Java OCaml "C\#"
 
 all:
 	@echo Use:
