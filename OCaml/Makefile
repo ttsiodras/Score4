@@ -9,6 +9,10 @@ all:	$(TARGETS)
 clean:
 	rm -f $(TARGETS) $(CRUFT)
 
+include ../Makefile.common
+
 test:	|all
-	@echo -n 'Benchmarking imperative OCaml ...' ; for i in {1..10} ; do bash -c "time ./score4.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
-	@echo -n 'Benchmarking functional OCaml ...' ; for i in {1..10} ; do bash -c "time ./score4_functional.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative OCaml ...'
+	@BINARY=./score4.bin make -s speedtest
+	@echo -n 'Benchmarking functional OCaml ...'
+	@BINARY=./score4_functional.bin make -s speedtest

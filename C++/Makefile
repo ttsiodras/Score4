@@ -4,10 +4,13 @@ CXXFLAGS += -O3 -Wall -DNDEBUG -mtune=native -march=native -std=c++0x
 
 all:	$(TARGETS)
 
+include ../Makefile.common
 
 test:	|all
-	@echo -n 'Benchmarking imperative memoized C++ ...' ; for i in {1..10} ; do bash -c "time ./score4_extreme o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
-	@echo -n 'Benchmarking imperative C++ ...' ; for i in {1..10} ; do bash -c "time ./score4 o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative memoized C++ ...'
+	@BINARY=./score4_extreme make -s speedtest
+	@echo -n 'Benchmarking imperative C++ ...'
+	@BINARY=./score4 make -s speedtest
 
 clean:
 	@rm -rf $(TARGETS)

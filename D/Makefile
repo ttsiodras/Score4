@@ -8,5 +8,8 @@ all:	$(TARGET)
 clean:
 	rm -f $(TARGET) score4.o
 
+include ../Makefile.common
+
 test:	|all
-	@echo -n 'Benchmarking imperative D ...' ; for i in {1..10} ; do bash -c "time ./score4.bin o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative D ...'
+	@BINARY=./score4.bin make -s speedtest

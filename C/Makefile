@@ -4,8 +4,11 @@ CFLAGS += -O3 -Wall -DNDEBUG -mtune=native -march=native
 
 all:	$(TARGETS)
 
+include ../Makefile.common
+
 test:	|all
-	@echo -n 'Benchmarking imperative C ...' ; for i in {1..10} ; do bash -c "time ./score4 o53 y43 -debug" 2>&1 | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' ; done | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@echo -n 'Benchmarking imperative C ...'
+	@BINARY=./score4 make -s speedtest
 
 clean:
 	@rm -rf $(TARGETS)
