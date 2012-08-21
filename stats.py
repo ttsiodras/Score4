@@ -6,20 +6,23 @@ while True:
     try:
         a=float(raw_input())
     except:
-        break
+        try:
+            a=float(input())
+        except:
+            break
     total += a
     totalSq += a*a
     n += 1
     allOfThem.append(a)
 
-print "Average value:", total/n
+print("Average value: %f" % (total/n))
 variance = (totalSq - total*total/n)/n
 try:
     v = math.sqrt(variance)
-    print "Std deviation:", v
+    print("Std deviation: %f" % v)
 except:
-    print "Std deviation:", 0.0
+    print("Std deviation: 0.0")
 srted = sorted(allOfThem)
-print "Median:", srted[-1 + len(allOfThem)/2]
-print "Min %4.3f sec" % srted[0]
-print "Max:", srted[-1]
+print("Median: %f" % srted[-1 + int(len(allOfThem)/2)])
+print("Min: %f" % srted[0])
+print("Max: %f" % srted[-1])
