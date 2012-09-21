@@ -81,8 +81,8 @@ let scoreBoard (board:Cell array) =
     else if counts.[8] <> 0 then
         ORANGEWINS
     else
-        counts.[5] + 2*counts.[6] + 5*counts.[7] + 10*counts.[8] -
-            counts.[3] - 2*counts.[2] - 5*counts.[1] - 10*counts.[0]
+        counts.[5] + 2*counts.[6] + 5*counts.[7] -
+            counts.[3] - 2*counts.[2] - 5*counts.[1]
 
 let dropDisk (board:Cell array) column color =
     let mutable searching = true

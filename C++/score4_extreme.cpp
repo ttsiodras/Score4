@@ -137,8 +137,8 @@ int ScoreBoard(const Board& board)
         finalScore = orangeWins;
     else
         finalScore =
-            counters[5] + 2*counters[6] + 5*counters[7] + 10*counters[8] -
-            counters[3] - 2*counters[2] - 5*counters[1] - 10*counters[0];
+            counters[5] + 2*counters[6] + 5*counters[7] -
+            counters[3] - 2*counters[2] - 5*counters[1];
     // Store in cache, so we never have to recalculate this board again
     scoreCache[board] = finalScore;
     return finalScore;

@@ -64,10 +64,10 @@ int ScoreBoard(int scores[][WIDTH])
         return YELLOW_WINS;
     else if (counters[8] != 0)
         return ORANGE_WINS;
-    else 
-        return 
-            counters[5] + 2*counters[6] + 5*counters[7] + 10*counters[8] -
-            counters[3] - 2*counters[2] - 5*counters[1] - 10*counters[0];
+    else
+        return
+            counters[5] + 2*counters[6] + 5*counters[7] -
+            counters[3] - 2*counters[2] - 5*counters[1];
 }
 
 int dropDisk(int board[][WIDTH], int column, int color)

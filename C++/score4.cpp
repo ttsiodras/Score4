@@ -124,10 +124,10 @@ because the access to the array triggers cache misses.
         return yellowWins;
     else if (counters[8] != 0)
         return orangeWins;
-    else 
-        return 
-            counters[5] + 2*counters[6] + 5*counters[7] + 10*counters[8] -
-            counters[3] - 2*counters[2] - 5*counters[1] - 10*counters[0];
+    else
+        return
+            counters[5] + 2*counters[6] + 5*counters[7] -
+            counters[3] - 2*counters[2] - 5*counters[1];
 }
 
 int dropDisk(Board& board, int column, Mycell color)
