@@ -8,6 +8,7 @@ OCaml/score4.o
 F#/score4.exe
 C#/score4.exe
 F#/score4_functional.exe
+Go/score4
 OCaml/score4_functional.bin
 OCaml/score4_functional.cmi
 OCaml/score4_functional.cmx

@@ -1,4 +1,51 @@
-DIRS:=C++ C Lisp Java OCaml "C\#" "F\#" Python
+DIRS:=
+
+GCC_EXISTS=$(shell which gcc)
+ifneq ($(GCC_EXISTS),)
+DIRS:=$(DIRS) C
+endif
+
+GPP_EXISTS=$(shell which g++)
+ifneq ($(GPP_EXISTS),)
+DIRS:=$(DIRS) C++
+endif
+
+DMD_EXISTS=$(shell which dmd)
+ifneq ($(DMD_EXISTS),)
+DIRS:=$(DIRS) D
+endif
+
+SBCL_EXISTS=$(shell which sbcl)
+CMUCL_EXISTS=$(shell which cmucl)
+ifneq ($(SBCL_EXISTS),)
+ifneq ($(CMUCL_EXISTS),)
+DIRS:=$(DIRS) Lisp
+endif
+endif
+
+GCCGO_EXISTS=$(shell which gccgo)
+ifneq ($(GCCGO_EXISTS),)
+DIRS:=$(DIRS) Go
+endif
+
+JAVA_EXISTS=$(shell which java)
+JAVAC_EXISTS=$(shell which javac)
+ifneq ($(JAVA_EXISTS),)
+ifneq ($(JAVAC_EXISTS),)
+DIRS:=$(DIRS) Java
+endif
+endif
+
+OCAMLOPT_EXISTS=$(shell which ocamlopt)
+ifneq ($(OCAMLOPT_EXISTS),)
+DIRS:=$(DIRS) OCaml
+endif
+
+# Add these for C# and F#
+#DIRS:=$(DIRS) "C\#" "F\#"
+
+# Add this for Python
+#DIRS:=$(DIRS) Python
 
 all:
 	@echo Use:
@@ -10,7 +57,7 @@ all:
 	@echo "        to play a console game of score4"
 	@echo 
 	@echo "    make benchmark"
-	@echo "        to benchmark implementations (F#/C#/Java/OCaml/Lisp/C++/C)"
+	@echo "        to benchmark implementations (C/C++/Java/OCaml/Lisp/F#/C#)"
 	@echo 
 
 play:
