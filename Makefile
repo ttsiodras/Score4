@@ -47,6 +47,8 @@ endif
 # Add this for Python
 #DIRS:=$(DIRS) Python
 
+UNAME:=$(shell uname)
+
 all:
 	@echo Use:
 	@echo 
@@ -61,7 +63,11 @@ all:
 	@echo 
 
 play:
+ifeq (${UNAME}, Darwin)
+	make -C C++ && arch -i386 python ./interfaces/driverGUI.py
+else
 	make -C C++ && ./interfaces/driverGUI.py
+endif
 
 playSimple:
 	make -C C++ && ./interfaces/driver.py
