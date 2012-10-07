@@ -3,7 +3,7 @@ TARGETS=score4
 # OSX compiler has no unordered_map
 UNAME:=$(shell uname)
 ifneq (${UNAME}, Darwin)
-TARGETS=$(TARGETS) score4_extreme
+TARGETS:=$(TARGETS) score4_extreme
 endif
 
 CXXFLAGS += -O3 -Wall -DNDEBUG -mtune=native -march=native -std=c++0x
