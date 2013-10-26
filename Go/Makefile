@@ -6,7 +6,7 @@ include ../Makefile.common
 
 $(TARGETS):
 	#go build score4.go
-	gccgo -O3 -o score4 score4.go
+	gccgo -g -O3 -o score4 score4.go
 
 test:	|all
 	@echo -n 'Benchmarking imperative Go ...'
