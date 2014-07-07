@@ -59,7 +59,7 @@ while True:
                 if state[y][x] != 0:
                     s+= " " + {1:"o",2:"y"}[state[y][x]] + str(y) + str(x)
         #print "./C++/score4 %s -level 7" % s
-        pipe = os.popen("./C++/score4_extreme %s -level 7" % s)
+        pipe = os.popen("./interfaces/engine.exe %s -level 7" % s)
         try:
             resp = pipe.readlines()[0]
             resp = int(resp)
