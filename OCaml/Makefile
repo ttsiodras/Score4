@@ -4,7 +4,7 @@ CRUFT=$(shell echo *.cm? *.o)
 all:	$(TARGETS)
 
 %.bin: %.ml common.ml
-	ocamlopt -unsafe -rectypes -inline 1000 -o ./$@ common.ml $<
+	ocamlopt -annot -unsafe -rectypes -inline 1000 -o ./$@ common.ml $<
 
 clean:
 	rm -f $(TARGETS) $(CRUFT)
