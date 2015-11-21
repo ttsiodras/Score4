@@ -1,6 +1,6 @@
 Everybody talks about Rust these days, so I decided to dive in.
 Here's my experience so far, after 24h with the language - porting
-the Score4 AI engine from my OCaml version.
+my Score4 AI engine.
 
 Executive summary
 -----------------
@@ -10,7 +10,7 @@ It works.
 But...
 
 ...it's a lot less clear than my OCaml version - the one
-I wrote 4 years ago when I started writing in functional style.
+I wrote 4 years ago when I started coding in functional style.
 
 To see for yourself, here's
 [the minimax function in OCaml](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
@@ -58,7 +58,7 @@ Never mind, I've only played with Rust in the last 24h
 ------------------------------------------------------
 Then again, in all fairness, I am a complete newbie in Rust - literally one day old. I am hoping
 the experts in /r/rust will show me the error of my ways and help me make this much closer to
-[the ML version](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
+[the ML version](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38).
 
 Patches most welcome! Best way to learn.
 
