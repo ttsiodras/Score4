@@ -1,5 +1,6 @@
-Everybody and their grandmother talks about Rust these days, so I decided
-it's time to meet the lady myself and form an opinion on her virtues.
+Everybody talks about Rust these days, so I decided to dive in.
+Here's my first thoughts, after 24h with the language, porting
+my Score4 engine.
 
 Executive summary
 -----------------
