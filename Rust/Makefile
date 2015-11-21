@@ -1,6 +1,6 @@
-include ../Makefile.common
-
 all:	debug
+
+include ../Makefile.common
 
 debug:
 	cargo build
