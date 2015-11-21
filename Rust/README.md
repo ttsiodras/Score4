@@ -42,8 +42,8 @@ I am surely missing something here.
 
 usize forever
 -------------
-Converting to usize was also very annoying - search for usize in this file to see how many times
-I had to do this.
+Converting to `usize` was also very annoying - search for `usize` in `src/main.rs` to see
+how many times I had to do this. I am hoping, again, that I am missing something.
 
 Never mind, I've only played with Rust in the last 24h
 ------------------------------------------------------
