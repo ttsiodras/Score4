@@ -57,7 +57,8 @@ how many times I had to do this. I am hoping, again, that I am missing something
 Never mind, I've only played with Rust in the last 24h
 ------------------------------------------------------
 Then again, in all fairness, I am a complete newbie in Rust - literally one day old. I am hoping
-the experts in /r/rust will show me the error of my ways and help me make this much closer to
+the experts in /r/rust will show me the error of my ways and help me shape this into something
+a lot cleaner - and ideally, a lot closer (verbosity-wise) to
 [the ML version](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38).
 
 Patches most welcome! Best way to learn.
