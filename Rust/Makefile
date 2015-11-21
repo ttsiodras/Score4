@@ -10,4 +10,4 @@ release:
 	cargo run --release
 
 dynamic:
-	rustc  -O -C prefer-dynamic src/main.rs src/common.rs
+	rustc  -O -C prefer-dynamic src/main.rs
