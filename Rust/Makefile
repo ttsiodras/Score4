@@ -1,13 +1,16 @@
+include ../Makefile.common
+
 all:	debug
 
-build:
+debug:
 	cargo build
 
-debug:
-	cargo run
-
 release:
-	cargo run --release
+	cargo build --release
 
 dynamic:
 	rustc  -O -C prefer-dynamic src/main.rs
+
+test:   |release
+	@echo -n 'Benchmarking functional Rust ...'
+	@BINARY=./target/release/score4 make -s speedtest

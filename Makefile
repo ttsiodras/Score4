@@ -16,11 +16,11 @@ DIRS:=$(DIRS) D
 endif
 
 SBCL_EXISTS=$(shell which sbcl)
-CMUCL_EXISTS=$(shell which cmucl)
+#CMUCL_EXISTS=$(shell which cmucl)
 ifneq ($(SBCL_EXISTS),)
-ifneq ($(CMUCL_EXISTS),)
+#ifneq ($(CMUCL_EXISTS),)
 DIRS:=$(DIRS) Lisp
-endif
+#endif
 endif
 
 GCCGO_EXISTS=$(shell which gccgo)
@@ -41,6 +41,11 @@ ifneq ($(OCAMLOPT_EXISTS),)
 DIRS:=$(DIRS) OCaml
 endif
 
+RUSTC_EXISTS=$(shell which rustc)
+ifneq ($(RUSTC_EXISTS),)
+DIRS:=$(DIRS) Rust
+
+endif
 # Add these for C# and F#
 #DIRS:=$(DIRS) "C\#" "F\#"
 
