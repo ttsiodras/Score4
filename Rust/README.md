@@ -67,3 +67,20 @@ P.S. The good news...
 ---------------------
 Rust does share a trait with OCaml... Just like my first experiences with OCaml 4 years ago,
 once I managed to compile my Rust code, it run correctly - the first time I executed it.
+
+And... it beats OCaml's speed, which is, erm, really nice! Rust is now the top performer 
+in the functional-style benchmarks!
+
+    ======================
+    = Running benchmarks =
+    ======================
+    Benchmarking imperative memoized C++ ...: 0.071000
+    Benchmarking imperative C ...: 0.085000
+    Benchmarking imperative C++ ...: 0.088000
+    Benchmarking imperative D ...: 0.140000
+    Benchmarking imperative Java ...: 0.218000
+    Benchmarking imperative OCaml ...: 0.231000
+    Benchmarking functional Rust ...: 0.334000
+    Benchmarking functional OCaml ...: 0.450000
+    ...
+
