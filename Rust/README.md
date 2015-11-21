@@ -1,6 +1,6 @@
 Everybody talks about Rust these days, so I decided to dive in.
-Here's my first thoughts, after 24h with the language, porting
-my Score4 engine.
+Here's my experience so far, after 24h with the language - porting
+the Score4 AI engine from my OCaml version.
 
 Executive summary
 -----------------
