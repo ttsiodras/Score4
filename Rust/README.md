@@ -4,11 +4,19 @@ it's time to meet the lady myself and form an opinion on her virtues.
 Executive summary
 -----------------
 
-The result works, but it's a lot less clear than my OCaml version - the one
-[I wrote 4 years ago](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
-when I first dove into functional style...
+It works.
 
-To be honest, at some point I forgot what I was doing (i.e. the algorithm) and got lost
+But...
+
+...it's a lot less clear than my OCaml version - the one
+I wrote 4 years ago when I started writing in functional style.
+
+To see for yourself, here's
+[the minimax function in OCaml](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
+and here's
+[the minimax function in Rust](https://github.com/ttsiodras/Score4/blob/master/Rust/src/main.rs#L109),
+
+At some point I forgot what I was doing (i.e. the algorithm) and got lost
 in the minutiae... with the Rust compiler barking about requiring stars, ampersands and
 double ampersands (not joking, see the code)... I just followed blindly what the compiler was
 complaining about: "I want an & here" - "OK, here's one"...
@@ -17,7 +25,7 @@ And 3h later, I ended up with double ampersands :-)
 
 Collect or die
 --------------
-Another highlight - try removing the '.collect's - i.e. changing...
+Another highlight - try removing the `.collect`s - i.e. changing...
 
     let moves_and_boards: LinkedList<_> = valid_moves.iter().map(
         |column| (*column, drop_disk(board, *column, color))).collect();
@@ -51,7 +59,9 @@ Then again, in all fairness, I am a complete newbie in Rust - literally one day 
 the experts in /r/rust will show me the error of my ways and help me make this much closer to
 [the ML version](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
 
-P.S. The good news
-------------------
+Patches most welcome! Best way to learn.
+
+P.S. The good news...
+---------------------
 Rust does share a trait with OCaml... Just like my first experiences with OCaml 4 years ago,
 once I managed to compile my Rust code, it run correctly - the first time I executed it.
