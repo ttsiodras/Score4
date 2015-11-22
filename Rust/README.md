@@ -71,6 +71,16 @@ once I managed to compile my Rust code, it run correctly - the first time I exec
 And... it beats OCaml's speed, which is, erm, really nice! Rust is now the top performer 
 in the functional-style benchmarks!
 
+EDIT, 1 day later: Two kind people in /r/rust (masklinn and clippy-rust) suggested I use
+`Vec` instead of `LinkedList` (much-improved cache locality) and use `.iter().max()/min()`
+instead of Fold-ing on `allData`. The result is a spectacular 2x, making Rust "touch" the
+imperative camp. 
+
+I must now update the other implementations to use their "compact" vectors instead of lists,
+to make the comparison fair again :-)
+
+Current results as of Nov 22, 2015 on my MBAir running ArchLinux:
+
     ======================
     = Running benchmarks =
     ======================
@@ -78,9 +88,9 @@ in the functional-style benchmarks!
     Benchmarking imperative C ...: 0.085000
     Benchmarking imperative C++ ...: 0.088000
     Benchmarking imperative D ...: 0.140000
+    Benchmarking functional Rust ...: 0.174000
     Benchmarking imperative Java ...: 0.218000
     Benchmarking imperative OCaml ...: 0.231000
-    Benchmarking functional Rust ...: 0.334000
     Benchmarking functional OCaml ...: 0.450000
     ...
 
