@@ -1,6 +1,6 @@
 use std::env;
 use std::process;
-use std::collections::LinkedList;
+//use std::collections::Vec;
 
 mod common;
 
@@ -107,24 +107,23 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // shares with my corresponding efforts in OCaml, 4 years ago).
 
 fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:&bool) -> (Option<u32>, i32) {
-    let valid_moves: LinkedList<_> = (0..WIDTH).filter(|column| board[0][*column as usize] == 0).collect();
+    let valid_moves: Vec<_> = (0..WIDTH).filter(|column| board[0][*column as usize] == 0).collect();
     match valid_moves.is_empty() {
         true => (None, score_board(board)),
         _ => {
-            let moves_and_boards: LinkedList<_> = valid_moves.iter().map(|column| (*column, drop_disk(board, *column, color))).collect();
-            let movies_and_scores: LinkedList<_> = moves_and_boards.iter().map(|&(column,board)| (column, score_board(&board))).collect();
+            let moves_and_boards: Vec<_> = valid_moves.iter().map(|column| (*column, drop_disk(board, *column, color))).collect();
+            let moves_and_scores: Vec<_> = moves_and_boards.iter().map(|&(column,board)| (column, score_board(&board))).collect();
             let target_score = if maximize_or_minimize { ORANGE_WINS } else { YELLOW_WINS };
-            let killer_moves: LinkedList<_> = movies_and_scores.iter().filter(|& &(_,score)| score==target_score).collect();
-            match killer_moves.front() {
-                Some(& &(killer_move,killer_score)) => (Some(killer_move), killer_score),
-                None => {
+            let killer_moves: Vec<_> = moves_and_scores.iter().filter(|& &(_,score)| score==target_score).collect();
+            match killer_moves.len() {
+                0 => {
                     let best_scores = match depth {
                         1 => {
-                            let scores: LinkedList<_> = movies_and_scores.iter().map(|x| x.1).collect();
+                            let scores: Vec<_> = moves_and_scores.iter().map(|x| x.1).collect();
                             scores
                         },
                         _ => {
-                            let scores: LinkedList<_> = moves_and_boards.iter().map(|x| &x.1)
+                            let scores: Vec<_> = moves_and_boards.iter().map(|x| &x.1)
                                 .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
                                 .map(|(_,bscore)|
                                     // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
@@ -136,30 +135,26 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
                             scores
                         }
                     };
-                    let mut all_data: LinkedList<_> = valid_moves.iter().zip(best_scores).collect();
+                    let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
                     if *debug && depth == MAX_DEPTH {
                         for (column, score) in all_data.clone() {
                             println!("Depth {}, placing on {}, Score:{}\n", depth, column, score);
                         }
                     }
-                    let init = all_data.pop_front();
-                    match init {
+                    let best = if maximize_or_minimize {
+                        all_data.iter().max()
+                    } else {
+                        all_data.iter().min()
+                    };
+                    match best {
                         None => (None, 0),
-                        Some(v) => {
-                            let (best_move,best_score) = all_data.iter().fold(
-                                v,
-                                |l, r| {
-                                    if maximize_or_minimize {
-                                        if l.1 > r.1 { l } else { *r } 
-                                    } else {
-                                        if l.1 < r.1 { l } else { *r } 
-                                    }
-                                }
-                            );
-                            (Some(*best_move),best_score)
+                        Some(x) => {
+                            let &(&best_score, best_move) = x;
+                            (Some(best_move),best_score)
                         }
                     }
-                }
+                },
+                _ => (Some(killer_moves[0].0), killer_moves[0].1),
             }
         }
     }
