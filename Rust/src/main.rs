@@ -139,7 +139,7 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
     };
     let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
     if *debug && depth == MAX_DEPTH {
-        for (column, score) in all_data.clone() {
+        for &(column, score) in &all_data {
             println!("Depth {}, placing on {}, Score:{}\n", depth, column, score);
         }
     }
