@@ -106,29 +106,38 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
     match valid_moves.is_empty() {
         true => (None, score_board(board)),
         _ => {
-            let moves_and_boards: Vec<_> = valid_moves.iter().map(|column| (*column, drop_disk(board, *column, color))).collect();
-            let moves_and_scores: Vec<_> = moves_and_boards.iter().map(|&(column,board)| (column, score_board(&board))).collect();
-            let target_score = if maximize_or_minimize { ORANGE_WINS } else { YELLOW_WINS };
-            let killer_moves: Vec<_> = moves_and_scores.iter().filter(|& &(_,score)| score==target_score).collect();
+
+            let target_score = if maximize_or_minimize {
+                ORANGE_WINS
+            } else {
+                YELLOW_WINS
+            };
+
+            let moves_and_boards: Vec<_> = valid_moves
+                .iter()
+                .map(|column| (*column, drop_disk(board, *column, color)))
+                .collect();
+            let moves_and_scores: Vec<_> = moves_and_boards
+                .iter()
+                .map(|&(column,board)| (column, score_board(&board)))
+                .collect();
+            let killer_moves: Vec<_> = moves_and_scores
+                .iter()
+                .filter(|& &(_,score)| score==target_score)
+                .collect();
+
             match killer_moves.len() {
                 0 => {
-                    let best_scores = match depth {
-                        1 => {
-                            let scores: Vec<_> = moves_and_scores.iter().map(|x| x.1).collect();
-                            scores
-                        },
-                        _ => {
-                            let scores: Vec<_> = moves_and_boards.iter().map(|x| &x.1)
-                                .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
-                                .map(|(_,bscore)|
-                                    // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
-                                    match bscore {
-                                        1000000 | -1000000 => bscore - depth*color,
-                                        _ => bscore
-                                    })
-                                .collect();
-                            scores
-                        }
+                    let best_scores: Vec<_> = match depth {
+                        1 => moves_and_scores.iter().map(|x| x.1).collect(),
+                        _ => moves_and_boards.iter().map(|x| &x.1)
+                            .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
+                            .map(|(_,bscore)| match bscore {
+                                     // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
+                                     1000000 | -1000000 => bscore - depth*color,
+                                     _ => bscore
+                            })
+                            .collect()
                     };
                     let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
                     if *debug && depth == MAX_DEPTH {
@@ -143,10 +152,7 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
                     };
                     match best {
                         None => (None, 0),
-                        Some(x) => {
-                            let &(&best_score, best_move) = x;
-                            (Some(best_move),best_score)
-                        }
+                        Some(&(&best_score, best_move)) => (Some(best_move), best_score)
                     }
                 },
                 _ => (Some(killer_moves[0].0), killer_moves[0].1),
