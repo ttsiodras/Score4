@@ -24,11 +24,9 @@ use common::other_color as other_color;
 // Parse cmdline specs to create initial board
 
 fn load_board(args: Vec<String>) -> Board {
-    let mut board = [[0; WIDTH as usize]; HEIGHT as usize];
-    for yy in 0..HEIGHT {
-        let y = yy as usize;
-        for xx in 0..WIDTH {
-            let x = xx as usize;
+    let mut board = [[0; WIDTH]; HEIGHT];
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
             let orange = format!("o{}{}", y, x);
             let yellow = format!("y{}{}", y, x);
             if args.iter().any(|x| *x == orange) {
@@ -46,16 +44,13 @@ fn load_board(args: Vec<String>) -> Board {
 // Drop a chip, return the new board
 
 fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
-    let mut board_new: Board = [[0; WIDTH as usize]; HEIGHT as usize];
-    for yy in 0..HEIGHT {
-        let y = yy as usize;
-        for xx in 0..WIDTH {
-            let x = xx as usize;
+    let mut board_new: Board = [[0; WIDTH]; HEIGHT];
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
             board_new[y][x] = board[y][x];
         }
     }
-    for yy in (0..HEIGHT).rev() {
-        let y = yy as usize;
+    for y in (0..HEIGHT).rev() {
         if board_new[y][column as usize] == 0 {
             board_new[y][column as usize] = color;
             break;
@@ -107,7 +102,7 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // shares with my corresponding efforts in OCaml, 4 years ago).
 
 fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:&bool) -> (Option<u32>, i32) {
-    let valid_moves: Vec<_> = (0..WIDTH).filter(|column| board[0][*column as usize] == 0).collect();
+    let valid_moves: Vec<_> = (0..(WIDTH as u32)).filter(|column| board[0][*column as usize] == 0).collect();
     match valid_moves.is_empty() {
         true => (None, score_board(board)),
         _ => {
