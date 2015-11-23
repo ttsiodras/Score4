@@ -103,61 +103,54 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 
 fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:&bool) -> (Option<u32>, i32) {
     let valid_moves: Vec<_> = (0..(WIDTH as u32)).filter(|column| board[0][*column as usize] == 0).collect();
-    match valid_moves.is_empty() {
-        true => (None, score_board(board)),
-        _ => {
+    if valid_moves.is_empty() {
+        return (None, score_board(board))
+    }
 
-            let target_score = if maximize_or_minimize {
-                ORANGE_WINS
-            } else {
-                YELLOW_WINS
-            };
+    let target_score = if maximize_or_minimize {
+        ORANGE_WINS
+    } else {
+        YELLOW_WINS
+    };
 
-            let moves_and_boards: Vec<_> = valid_moves
-                .iter()
-                .map(|column| (*column, drop_disk(board, *column, color)))
-                .collect();
-            let moves_and_scores: Vec<_> = moves_and_boards
-                .iter()
-                .map(|&(column,board)| (column, score_board(&board)))
-                .collect();
-            let killer_moves: Vec<_> = moves_and_scores
-                .iter()
-                .filter(|& &(_,score)| score==target_score)
-                .collect();
+    let moves_and_boards: Vec<_> = valid_moves
+        .iter()
+        .map(|column| (*column, drop_disk(board, *column, color)))
+        .collect();
+    let moves_and_scores: Vec<_> = moves_and_boards
+        .iter()
+        .map(|&(column,board)| (column, score_board(&board)))
+        .collect();
 
-            match killer_moves.len() {
-                0 => {
-                    let best_scores: Vec<_> = match depth {
-                        1 => moves_and_scores.iter().map(|x| x.1).collect(),
-                        _ => moves_and_boards.iter().map(|x| &x.1)
-                            .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
-                            .map(|(_,bscore)| match bscore {
-                                     // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
-                                     1000000 | -1000000 => bscore - depth*color,
-                                     _ => bscore
-                            })
-                            .collect()
-                    };
-                    let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
-                    if *debug && depth == MAX_DEPTH {
-                        for (column, score) in all_data.clone() {
-                            println!("Depth {}, placing on {}, Score:{}\n", depth, column, score);
-                        }
-                    }
-                    let best = if maximize_or_minimize {
-                        all_data.iter().max()
-                    } else {
-                        all_data.iter().min()
-                    };
-                    match best {
-                        None => (None, 0),
-                        Some(&(&best_score, best_move)) => (Some(best_move), best_score)
-                    }
-                },
-                _ => (Some(killer_moves[0].0), killer_moves[0].1),
-            }
+    if let Some(killer_move) = moves_and_scores.iter().find(|& &(_,score)| score == target_score) {
+        return (Some(killer_move.0), killer_move.1);
+    }
+
+    let best_scores: Vec<_> = match depth {
+        1 => moves_and_scores.iter().map(|x| x.1).collect(),
+        _ => moves_and_boards.iter().map(|x| &x.1)
+            .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
+            .map(|(_,bscore)| match bscore {
+                     // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
+                     1000000 | -1000000 => bscore - depth*color,
+                     _ => bscore
+            })
+            .collect()
+    };
+    let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
+    if *debug && depth == MAX_DEPTH {
+        for (column, score) in all_data.clone() {
+            println!("Depth {}, placing on {}, Score:{}\n", depth, column, score);
         }
+    }
+    let best = if maximize_or_minimize {
+        all_data.iter().max()
+    } else {
+        all_data.iter().min()
+    };
+    match best {
+        None => (None, 0),
+        Some(&(&best_score, best_move)) => (Some(best_move), best_score)
     }
 }
 
