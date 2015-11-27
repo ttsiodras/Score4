@@ -6,20 +6,20 @@ mod common;
 
 // Import constants
 
-use common::WIDTH as WIDTH;
-use common::HEIGHT as HEIGHT;
-use common::ORANGE_WINS as ORANGE_WINS;
-use common::YELLOW_WINS as YELLOW_WINS;
-use common::MAX_DEPTH as MAX_DEPTH;
+use common::WIDTH;
+use common::HEIGHT;
+use common::ORANGE_WINS;
+use common::YELLOW_WINS;
+use common::MAX_DEPTH;
 
 // Import types
 
-use common::Board as Board;
+use common::Board;
 
 // Import functions
 
-use common::score_board as score_board;
-use common::other_color as other_color;
+use common::score_board;
+use common::other_color;
 
 // Parse cmdline specs to create initial board
 
