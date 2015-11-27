@@ -25,16 +25,14 @@ use common::other_color;
 
 fn load_board(args: Vec<String>) -> Board {
     let mut board = [[0; WIDTH]; HEIGHT];
-    for y in 0..HEIGHT {
-        for x in 0..WIDTH {
+    for (y, row) in board.iter_mut().enumerate() {
+        for (x, cell) in row.iter_mut().enumerate() {
             let orange = format!("o{}{}", y, x);
             let yellow = format!("y{}{}", y, x);
             if args.iter().any(|x| *x == orange) {
-                board[y][x] = 1i32;
+                *cell = 1i32;
             } else if args.iter().any(|x| *x == yellow) {
-                board[y][x] = -1i32;
-            } else {
-                board[y][x] = 0i32;
+                *cell = -1i32;
             }
         }
     }
@@ -43,16 +41,11 @@ fn load_board(args: Vec<String>) -> Board {
 
 // Drop a chip, return the new board
 
-fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
-    let mut board_new: Board = [[0; WIDTH]; HEIGHT];
-    for y in 0..HEIGHT {
-        for x in 0..WIDTH {
-            board_new[y][x] = board[y][x];
-        }
-    }
-    for y in (0..HEIGHT).rev() {
-        if board_new[y][column as usize] == 0 {
-            board_new[y][column as usize] = color;
+fn drop_disk(board: &Board, column:usize, color:i32) -> Board {
+    let mut board_new = board.clone();
+    for row in board_new.iter_mut().rev() {
+        if row[column] == 0 {
+            row[column] = color;
             break;
         }
     }
@@ -106,7 +99,7 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
 
     let moves_and_boards: Vec<_> = valid_moves
         .iter()
-        .map(|column| (*column, drop_disk(board, *column, color)))
+        .map(|column| (*column, drop_disk(board, *column as usize, color)))
         .collect();
     let moves_and_scores: Vec<_> = moves_and_boards
         .iter()
