@@ -85,12 +85,12 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // Do this in all the places below ...and then marvel at the errors spat out by the Rust compiler.
 // Who's afraid of C++ template errors?  You ain't seen nothing yet!
 //
-// I believe the issue comes from .map and .filter and friends returning iter-ables, and not the 
+// I believe the issue comes from .map and .filter and friends returning iter-ables, and not the
 // collections they came from - so in OCaml it's fine to "pipe" the results of List.filter
 // to List.map... where as here you get Error Messages from Lord Voldemort (TM) unless you
 // .collect() , specify a LinkedList<_> type for the result, and then .iter() all over again
 // (because LinkedList has no .map or .filter (what?!)
-// 
+//
 // Then again, in all fairness, I am a complete newbie in Rust - literally one day old. I am hoping
 // the experts in /r/rust will show me the error of my ways and help me make this much closer to
 // the ML version (again, here:   https://goo.gl/Cz3kr3 )
@@ -98,8 +98,8 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // P.S. The good news: once I managed to compile it, it run correctly the first time (a trait it
 // shares with my corresponding efforts in OCaml, 4 years ago).
 
-fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:&bool) -> (Option<u32>, i32) {
-    let valid_moves: Vec<_> = (0..(WIDTH as u32)).filter(|column| board[0][*column as usize] == 0).collect();
+fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:bool) -> (Option<u32>, i32) {
+    let valid_moves: Vec<_> = (0..(WIDTH as u32)).filter(|&column| board[0][column as usize] == 0).collect();
     if valid_moves.is_empty() {
         return (None, score_board(board));
     }
@@ -119,17 +119,17 @@ fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, deb
     let best_scores: Vec<_> = match depth {
         1 => moves_and_scores.iter().map(|x| x.1).collect(),
         _ => moves_and_boards.iter().map(|x| &x.1)
-            .map(|&le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, &le_board, debug))
+            .map(|le_board| ab_minimax(!maximize_or_minimize, other_color(color), depth-1, le_board, debug))
             .map(|(_,bscore)|
                 // when loss is certain, avoid forfeiting the match, by shifting scores by depth...
                 match bscore {
-                    1000000 | -1000000 => bscore - depth*color,
+                    ORANGE_WINS | YELLOW_WINS => bscore - depth*color,
                     _ => bscore
                 })
             .collect()
     };
     let all_data: Vec<_> = best_scores.iter().zip(valid_moves).collect();
-    if *debug && depth == MAX_DEPTH {
+    if debug && depth == MAX_DEPTH {
         for &(score, column) in &all_data {
             println!("Depth {}, placing on {}, Score:{}", depth, column, score);
         }
@@ -160,7 +160,7 @@ fn main() {
         process::exit(-1);
     } else {
         // let (mv,score) = ab_minimax(true, 1, MAX_DEPTH, &board);
-        let (mv,_) = ab_minimax(true, 1, MAX_DEPTH, &board, &debug);
+        let (mv,_) = ab_minimax(true, 1, MAX_DEPTH, &board, debug);
         match mv {
             Some(column) => {
                 println!("{}", column);

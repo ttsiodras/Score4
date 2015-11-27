@@ -12,7 +12,7 @@ pub fn other_color(color:i32) -> i32 {
 }
 
 pub fn score_board(board:&Board) -> i32 {
-    let mut counts = [0,0,0,0,0,0,0,0,0];
+    let mut counts = [0; 9];
 
     let myincr = |arr:&mut[i32; 9], idx:i32| {
          arr[idx as usize] = arr[idx as usize] + 1;
@@ -40,9 +40,9 @@ pub fn score_board(board:&Board) -> i32 {
 
     // Down-right (and up-left) diagonals
     for y in 0..HEIGHT-3 {
-        for x in 0 .. WIDTH-3 {
+        for x in 0..WIDTH-3 {
             let mut score: i32 = 0;
-            for idx in 0 .. 4 {
+            for idx in 0..4 {
                 score += board[y+idx][x+idx];
             }
             myincr(&mut counts, score+4);
