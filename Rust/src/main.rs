@@ -24,7 +24,7 @@ use common::other_color as other_color;
 // Parse cmdline specs to create initial board
 
 fn load_board(args: Vec<String>) -> Board {
-    let mut board = [[0; WIDTH as usize]; HEIGHT as usize];
+    let mut board = [[0; WIDTH]; HEIGHT];
     for y in 0..HEIGHT {
         for x in 0..WIDTH {
             let orange = format!("o{}{}", y, x);
@@ -44,7 +44,7 @@ fn load_board(args: Vec<String>) -> Board {
 // Drop a chip, return the new board
 
 fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
-    let mut board_new: Board = [[0; WIDTH as usize]; HEIGHT as usize];
+    let mut board_new: Board = [[0; WIDTH]; HEIGHT];
     for y in 0..HEIGHT {
         for x in 0..WIDTH {
             board_new[y][x] = board[y][x];
@@ -91,9 +91,6 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // .collect() , specify a LinkedList<_> type for the result, and then .iter() all over again
 // (because LinkedList has no .map or .filter (what?!)
 // 
-// Converting to usize was also very annoying - search for usize in this file to see how many times
-// I had to do this.
-//
 // Then again, in all fairness, I am a complete newbie in Rust - literally one day old. I am hoping
 // the experts in /r/rust will show me the error of my ways and help me make this much closer to
 // the ML version (again, here:   https://goo.gl/Cz3kr3 )
