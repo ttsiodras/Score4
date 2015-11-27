@@ -22,9 +22,9 @@ pub fn score_board(board:&Board) -> i32 {
     for y in 0..HEIGHT {
         let mut score: i32 = board[y][0] + board[y][1] + board[y][2];
         for x in 3..WIDTH {
-            score = score + board[y][x];
+            score += board[y][x];
             myincr(&mut counts, score+4);
-            score = score - board[y][x-3];
+            score -= board[y][x-3];
         }
     }
 
@@ -32,9 +32,9 @@ pub fn score_board(board:&Board) -> i32 {
     for x in 0..WIDTH {
         let mut score: i32 = board[0][x] + board[1][x] + board[2][x];
         for y in 3..HEIGHT {
-            score = score + board[y][x];
+            score += board[y][x];
             myincr(&mut counts, score+4);
-            score = score - board[y-3][x];
+            score -= board[y-3][x];
         }
     }
 
@@ -43,7 +43,7 @@ pub fn score_board(board:&Board) -> i32 {
         for x in 0 .. WIDTH-3 {
             let mut score: i32 = 0;
             for idx in 0 .. 4 {
-                score = score + board[y+idx][x+idx];
+                score += board[y+idx][x+idx];
             }
             myincr(&mut counts, score+4);
         }
@@ -54,7 +54,7 @@ pub fn score_board(board:&Board) -> i32 {
         for x in 0..WIDTH-3 {
             let mut score: i32 = 0;
             for idx in 0..4 {
-                score = score + board[y-idx][x+idx];
+                score += board[y-idx][x+idx];
             }
             myincr(&mut counts, score+4);
         }
