@@ -61,12 +61,12 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 
 // Le Brain (TM) - in "we-spared-no-expenses" functional style (Hint - raptors lurking)
 //
-// Executive summary of porting this to Rust: The result works, but it's a lot less clear than
+// Executive summary of porting this to Rust: The result works, but IMHO it is less clear than
 // my OCaml version - the one I wrote 4 years ago, when I first dove into functional style...
 //
 //          https://goo.gl/Cz3kr3
 //
-// To be honest, at some point I forgot what I was doing (i.e. the algorithm) and got lost
+// In Rust, at some point I forgot what I was doing (i.e. the algorithm) and got lost
 // in the minutiae - with the Rust compiler barking about requiring stars, ampersands and
 // double ampersands (not joking, see below)... I just followed what the compiler was
 // complaining about "I want an & here" - "OK, here's one". And ended up with double ampersands
@@ -96,7 +96,7 @@ fn drop_disk(board: &Board, column:u32, color:i32) -> Board {
 // the ML version (again, here:   https://goo.gl/Cz3kr3 )
 //
 // P.S. The good news: once I managed to compile it, it run correctly the first time (a trait it
-// shares with my corresponding efforts in OCaml, 4 years ago).
+// shares with my corresponding efforts in OCaml, 4 years ago). And it's 2x faster than OCaml!
 
 fn ab_minimax(maximize_or_minimize:bool, color:i32, depth:i32, board:&Board, debug:bool) -> (Option<u32>, i32) {
     let valid_moves: Vec<_> = (0..(WIDTH as u32)).filter(|&column| board[0][column as usize] == 0).collect();
