@@ -5,7 +5,7 @@ MONO:=
 CSHARPCOMPILER:=csc.exe  /checked- /optimize+ /unsafe+
 else
 MONO:=mono
-CSHARPCOMPILER:=gmcs -checked- -optimize+ -unsafe+
+CSHARPCOMPILER:=mcs -checked- -optimize+ -unsafe+
 endif
 
 all:	score4.exe

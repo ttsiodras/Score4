@@ -1,13 +1,13 @@
 DIRS:=
 
-GCC_EXISTS=$(shell which gcc)
-ifneq ($(GCC_EXISTS),)
-DIRS:=$(DIRS) C
-endif
-
 GPP_EXISTS=$(shell which g++)
 ifneq ($(GPP_EXISTS),)
 DIRS:=$(DIRS) C++
+endif
+
+GCC_EXISTS=$(shell which gcc)
+ifneq ($(GCC_EXISTS),)
+DIRS:=$(DIRS) C
 endif
 
 DMD_EXISTS=$(shell which dmd)
@@ -21,11 +21,6 @@ ifneq ($(SBCL_EXISTS),)
 #ifneq ($(CMUCL_EXISTS),)
 DIRS:=$(DIRS) Lisp
 #endif
-endif
-
-GCCGO_EXISTS=$(shell which gccgo)
-ifneq ($(GCCGO_EXISTS),)
-DIRS:=$(DIRS) Go
 endif
 
 RUSTC_EXISTS=$(shell which rustc)
@@ -45,9 +40,27 @@ ifneq ($(OCAMLOPT_EXISTS),)
 DIRS:=$(DIRS) OCaml
 endif
 
+GO_EXISTS=$(shell which go)
+ifneq ($(GO_EXISTS),)
+DIRS:=$(DIRS) Go
 endif
-# Add these for C# and F#
-#DIRS:=$(DIRS) "C\#" "F\#"
+
+MONO_EXISTS=$(shell which mono)
+MCS_EXISTS=$(shell which mcs)
+ifneq ($(MONO_EXISTS),)
+ifneq ($(MCS_EXISTS),)
+DIRS:=$(DIRS) "C\#"
+endif
+endif
+
+FSHARP_EXISTS=$(shell which mcs)
+ifneq ($(MONO_EXISTS),)
+ifneq ($(FSHARP_EXISTS),)
+DIRS:=$(DIRS) "F\#"
+endif
+endif
+
+endif
 
 # Add this for Python
 #DIRS:=$(DIRS) Python

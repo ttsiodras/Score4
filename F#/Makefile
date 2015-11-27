@@ -5,7 +5,7 @@ MONO:=
 FSHARPCOMPILER:="/c/Program Files (x86)/Microsoft F\#/v4.0/Fsc.exe"
 else
 MONO:=mono
-FSHARPCOMPILER:=/opt/FSharp-2.0.0.0/bin/fsc.exe
+FSHARPCOMPILER:=fsharpc
 endif
 
 TARGETS:=score4.exe score4_functional.exe
@@ -13,7 +13,7 @@ TARGETS:=score4.exe score4_functional.exe
 all:	$(TARGETS)
 
 %.exe:	%.fs
-	$(MONO) $(FSHARPCOMPILER) --checked- --optimize+ $^
+	$(FSHARPCOMPILER) --checked- --optimize+ $^
 
 include ../Makefile.common
 

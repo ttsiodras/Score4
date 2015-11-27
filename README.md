@@ -45,3 +45,25 @@ These are the results I get on my Celeron E3400 under Arch Linux:
     Benchmarking imperative C# ... 0.863 sec
     Benchmarking imperative F# ... 0.792 sec
     Benchmarking functional F# ... 1.958 sec
+
+**Update, 3 years later** - CMUCL is gone, and Rust entered the game
+with furious speed ; it's almost as fast as the imperative group but
+the code is functional-style - ported from the OCaml version.
+CMUCL is gone, too (can't find it in Arch's repos anymore).
+Go and D are there too...
+
+Results below from my MBair running Arch Linux:
+
+    Benchmarking imperative memoized C++ ...: 0.072000
+    Benchmarking imperative C ...: 0.085000
+    Benchmarking imperative C++ ...: 0.088000
+    Benchmarking imperative D ...: 0.139000
+    Benchmarking imperative Lisp (SBCL) ...: 0.143000
+    Benchmarking functional Rust ...: 0.155000
+    Benchmarking imperative Java ...: 0.220000
+    Benchmarking imperative OCaml ...: 0.230000
+    Benchmarking functional OCaml ...: 0.434000
+    Benchmarking imperative C# ...: 0.568000
+    Benchmarking imperative F# ...: 0.590000
+    Benchmarking imperative Go ...: 0.697000
+    Benchmarking functional F# ...: 1.295000
