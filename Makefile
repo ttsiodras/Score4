@@ -28,6 +28,10 @@ ifneq ($(GCCGO_EXISTS),)
 DIRS:=$(DIRS) Go
 endif
 
+RUSTC_EXISTS=$(shell which rustc)
+ifneq ($(RUSTC_EXISTS),)
+DIRS:=$(DIRS) Rust
+
 JAVA_EXISTS=$(shell which java)
 JAVAC_EXISTS=$(shell which javac)
 ifneq ($(JAVA_EXISTS),)
@@ -40,10 +44,6 @@ OCAMLOPT_EXISTS=$(shell which ocamlopt)
 ifneq ($(OCAMLOPT_EXISTS),)
 DIRS:=$(DIRS) OCaml
 endif
-
-RUSTC_EXISTS=$(shell which rustc)
-ifneq ($(RUSTC_EXISTS),)
-DIRS:=$(DIRS) Rust
 
 endif
 # Add these for C# and F#
