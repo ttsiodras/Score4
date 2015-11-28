@@ -15,10 +15,10 @@ To see for yourself, here's
 and here's
 [the minimax function in Rust](https://github.com/ttsiodras/Score4/blob/master/Rust/src/main.rs#L94),
 
-- Notice how `.iter()` populate space, because Lists and Vectors and other collections can't
+- Notice how `.iter()` are required, because Lists and Vectors and other collections can't
 be `map`-ed or `filter`-ed - you need to get an iterator from them.
-- Notice how I need to provide type specs to help the compiler when collecting
-- The references thing: At some point I forgot what I was doing (i.e. the algorithm)
+- Notice how I need to provide type specs to help the compiler when `collect`-ing.
+- As for the references thing... at some point I forgot what I was doing (i.e. the algorithm)
   and got lost in the minutiae of what's a reference and what isn't... the Rust compiler
   complained about requiring stars, ampersands and eventually, double ampersands (not joking,
   look at the code)... I responded by fixing what it was complaining about:
@@ -26,7 +26,7 @@ be `map`-ed or `filter`-ed - you need to get an iterator from them.
 
 And 3h later, I ended up with double ampersands :-) 
 
-The error messages were also quite complex - try removing the `.collect`s - e.g. changing...
+The error messages were also quite complex - try removing the `.collect()`s - e.g. changing...
 
     let moves_and_boards: LinkedList<_> = valid_moves.iter().map(
         |column| (*column, drop_disk(board, *column, color))).collect();
@@ -72,10 +72,10 @@ Correctness and speed - the good news...
   to waste CPU on. Rust also uses LLVM, so it re-uses 100s of man-years of optimizing
   know-how.
 
-EDIT, 1 day later: Two kind people in /r/rust (masklinn and clippy-rust) suggested I use
+*EDIT, 2 days later: Two kind people in /r/rust (masklinn and clippy-rust) suggested I use
 `Vec` instead of `LinkedList` (much-improved cache locality) and use `.iter().max()/min()`
 instead of Fold-ing on `allData`. The result is a spectacular 2x, placing Rust close
-enough to "touch" the speed of the imperative camp - very impressive.
+enough to "touch" the speed of the imperative camp - very impressive.*
 
 I must now find the time to update the OCaml implementations to use "compact" vectors
 instead of lists - to make the comparison fair again :-)
