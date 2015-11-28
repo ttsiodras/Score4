@@ -15,7 +15,7 @@ I wrote 4 years ago when I started coding in functional style.
 To see for yourself, here's
 [the minimax function in OCaml](https://github.com/ttsiodras/Score4/blob/master/OCaml/score4_functional.ml#L38),
 and here's
-[the minimax function in Rust](https://github.com/ttsiodras/Score4/blob/master/Rust/src/main.rs#L109),
+[the minimax function in Rust](https://github.com/ttsiodras/Score4/blob/master/Rust/src/main.rs#L94),
 
 At some point I forgot what I was doing (i.e. the algorithm) and got lost
 in the minutiae... with the Rust compiler barking about requiring stars, ampersands and
