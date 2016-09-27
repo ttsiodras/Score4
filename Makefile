@@ -26,6 +26,7 @@ endif
 RUSTC_EXISTS=$(shell which rustc)
 ifneq ($(RUSTC_EXISTS),)
 DIRS:=$(DIRS) Rust
+endif
 
 JAVA_EXISTS=$(shell which java)
 JAVAC_EXISTS=$(shell which javac)
@@ -58,8 +59,6 @@ ifneq ($(MONO_EXISTS),)
 ifneq ($(FSHARP_EXISTS),)
 DIRS:=$(DIRS) "F\#"
 endif
-endif
-
 endif
 
 # Add this for Python
