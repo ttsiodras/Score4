@@ -54,7 +54,7 @@ DIRS:=$(DIRS) "C\#"
 endif
 endif
 
-FSHARP_EXISTS=$(shell which mcs)
+FSHARP_EXISTS=$(shell which fsharpc)
 ifneq ($(MONO_EXISTS),)
 ifneq ($(FSHARP_EXISTS),)
 DIRS:=$(DIRS) "F\#"
