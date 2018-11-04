@@ -25,7 +25,7 @@ struct Score4 {
 
     enum Cell : int { Empty = 0, Orange = 1, Yellow = -1 }
 
-    const int maxDepth;
+    int maxDepth;
 
     // One padding Cell in rows gives a bit higher performance.
     Cell[width][height] board;
