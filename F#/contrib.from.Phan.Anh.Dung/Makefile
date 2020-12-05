@@ -4,8 +4,8 @@ ifeq ($(UNAME), CYGWIN_NT)
 MONO:=
 FSHARPCOMPILER:="/c/Program Files (x86)/Microsoft F\#/v4.0/Fsc.exe"
 else
-MONO:=mono
-FSHARPCOMPILER:=/opt/FSharp-2.0.0.0/bin/fsc.exe
+MONO:=
+FSHARPCOMPILER:=fsharpc
 endif
 
 TARGETS:=score4.exe score4_functional.exe score4_functional_list.exe score4_functional_array.exe score4_functional_array_mutable.exe
