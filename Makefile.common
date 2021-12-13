@@ -1,2 +1,2 @@
 speedtest:
-	@bash -c 'for i in {1..10} ; do LANG=C bash -c "time $$BINARY o53 y43" 2>&1 ; done' | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' | ../stats.py  | grep ^Min | sed 's,^Min,,'
+	@bash -c 'for i in {1..10} ; do LC_NUMERIC=C bash -c "time $$BINARY o53 y43" 2>&1 ; done' | grep '^real' | sed 's,0m,,;s,s,,;' | awk '{print $$2;}' | ../stats.py  | grep ^Min | sed 's,^Min,,'
