@@ -68,19 +68,34 @@ Results below from my MBair running Arch Linux:
     Benchmarking imperative Go ...: 0.697000
     Benchmarking functional F# ...: 1.295000
 
-**Update, 10 years later** - benchmark run on a Celeron N5095
-under Arch Linux:
+**Update, 10 years later** - benchmark re-run on a Celeron N5095
+under Arch Linux. Note that [running under the performance
+scheduler](https://github.com/ttsiodras/utils/blob/master/performance)
+is important whenever one is benchmarking; as is making sure
+that your CPU is not throttling.
 
     Benchmarking imperative memoized C++ ...: 0.058000
     Benchmarking imperative C ...: 0.070000
     Benchmarking imperative C++ ...: 0.071000
+    Benchmarking imperative Lisp (SBCL) ...: 0.119000
     Benchmarking functional Rust ...: 0.126000
-    Benchmarking imperative Lisp (SBCL) ...: 0.130000
     Benchmarking imperative D ...: 0.132000
-    Benchmarking imperative Java ...: 0.251000
-    Benchmarking imperative OCaml ...: 0.323000
+    Benchmarking imperative Java ...: 0.248000
+    Benchmarking imperative OCaml ...: 0.297000
     Benchmarking functional OCaml ...: 0.444000
     Benchmarking imperative Go ...: 0.491000
-    Benchmarking imperative C# ...: 0.626000
+    Benchmarking imperative C# ...: 0.617000
     Benchmarking imperative F# ...: 0.693000
     Benchmarking functional F# ...: 1.064000
+
+These results were generated in December 2022, with the following
+compiler versions:
+
+- GCC 12.2.0
+- DMD 2.101.0
+- SBCL 2.2.11
+- rustc 1.65.0
+- java 1.8.0_92 with HotSpot build 25.92-b14
+- OCaml 4.14.0
+- Mono C# 6.12.0.0
+- F# Compiler v10.2.3 for F# 4.5
