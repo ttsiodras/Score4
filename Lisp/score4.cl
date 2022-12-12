@@ -8,6 +8,10 @@
 ; Give me speed!
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
+
+; in the same vein (speed) we need (in many places) to specify
+; that the result of an operation fits in a fixnum
+; so we macro (the fixnum (...))
 (defmacro with-type (type expr)
   (labels ((binarize (expr)
              (if (and (nthcdr 3 expr)
@@ -19,32 +23,29 @@
              `(,(car expr) ,@(mapcar #'(lambda (a) 
                                          `(with-type ,type ,a))
                                      (cdr expr)))))
-    (declare (inline binarize expand-call))
     `(the ,type ,(if (atom expr) 
                      expr
                      (expand-call type (binarize expr))))))
 
-; in the same vein (speed) we need (in many places) to specify
-; that the result of an operation fits in a fixnum
-; so we macro (the fixnum (...))
+(defun operation-p (x)
+  (member x '(+ 1+ - 1- * / incf decf)))
+
+(defun clone (sexpr)
+  (cond 
+    ((listp sexpr)
+     (if (null sexpr)
+         ()
+         (let ((hd (car sexpr))
+               (tl (cdr sexpr)))
+           ;(format t "hd:~A~%tl:~A~%op:~A~%~%" hd tl (operation-p hd))
+           (cond
+             ((listp hd) (append (list (clone hd)) (clone tl)))
+             ((operation-p hd) (list 'the 'fixnum (cons hd (clone tl))))
+             (t (cons hd (clone tl)))))))
+    (t sexpr)))
+
 (defmacro fast (&rest sexpr)
-  (labels ((clone (sexpr)
-             (cond 
-               ((listp sexpr)
-                (if (null sexpr)
-                    ()
-                    (let ((hd (car sexpr))
-                          (tl (cdr sexpr)))
-                                        ;(format t "hd:~A~%tl:~A~%op:~A~%~%" hd tl (operation-p hd))
-                      (cond
-                        ((listp hd) (append (list (clone hd)) (clone tl)))
-                        ((operation-p hd) (list 'the 'fixnum (cons hd (clone tl))))
-                        (t (cons hd (clone tl)))))))
-               (t sexpr)))
-           (operation-p (x)
-             (member x '(+ 1+ - 1- * /))))
-    (declare (inline clone operation-p))
-    `(,@(clone sexpr))))
+  `(,@(clone sexpr)))
 
 (defmacro at (y x)
   ; we emulate a 6x7 board with a 6x7 = 42 one-dimensional one
