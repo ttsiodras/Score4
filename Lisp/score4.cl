@@ -8,22 +8,24 @@
 ; Give me speed!
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
-(defun binarize (expr)
-  (if (and (nthcdr 3 expr)
-           (member (car expr) '(+ - * /)))
-      (destructuring-bind (op a1 a2 . rest) expr
-        (binarize `(,op (,op ,a1 ,a2) ,@rest)))
-      expr))
 
-(defun expand-call (type expr)
-  `(,(car expr) ,@(mapcar #'(lambda (a) 
-                              `(with-type ,type ,a))
-                          (cdr expr))))
-
+; in the same vein (speed) we need (in many places) to specify
+; that the result of an operation fits in a fixnum
+; so we macro (the fixnum (...))
 (defmacro with-type (type expr)
-  `(the ,type ,(if (atom expr) 
-                   expr
-                   (expand-call type (binarize expr)))))
+  (labels ((binarize (expr)
+             (if (and (nthcdr 3 expr)
+                      (member (car expr) '(+ 1+ - 1- * / incf decf)))
+                 (destructuring-bind (op a1 a2 . rest) expr
+                   (binarize `(,op (,op ,a1 ,a2) ,@rest)))
+                 expr))
+           (expand-call (type expr)
+             `(,(car expr) ,@(mapcar #'(lambda (a) 
+                                         `(with-type ,type ,a))
+                                     (cdr expr)))))
+    `(the ,type ,(if (atom expr) 
+                     expr
+                     (expand-call type (binarize expr))))))
 
 (defun operation-p (x)
   (member x '(+ 1+ - 1- * / incf decf)))
@@ -35,16 +37,13 @@
          ()
          (let ((hd (car sexpr))
                (tl (cdr sexpr)))
-                                        ;(format t "hd:~A~%tl:~A~%op:~A~%~%" hd tl (operation-p hd))
+           ;(format t "hd:~A~%tl:~A~%op:~A~%~%" hd tl (operation-p hd))
            (cond
              ((listp hd) (append (list (clone hd)) (clone tl)))
              ((operation-p hd) (list 'the 'fixnum (cons hd (clone tl))))
              (t (cons hd (clone tl)))))))
     (t sexpr)))
 
-; in the same vein (speed) we need (in many places) to specify
-; that the result of an operation fits in a fixnum
-; so we macro (the fixnum (...))
 (defmacro fast (&rest sexpr)
   `(,@(clone sexpr)))
 
@@ -90,12 +89,12 @@
               collect `(setf score (with-type fixnum (+ (at ,y 0) (at ,y 1) (at ,y 2))))
               nconc (loop for x fixnum from 3 to (1- width)
                           ; add the 4th one
-                          collect `(incf score (with-type fixnum (at ,y ,x)))
+                          collect `(with-type fixnum (incf score (at ,y ,x)))
                           ; update counts
                           collect `(myincr)
                           ; if we re still in bounds, remove 1st of the old 4
                           if (/= x (1- width))
-                          collect `(decf score (with-type fixnum (at ,y ,(- x 3)))))))))
+                          collect `(with-type fixnum (decf score (at ,y ,(- x 3)))))))))
 
 (defmacro vertical-spans ()
   ; normal code is...
@@ -118,12 +117,12 @@
                collect `(setf score (with-type fixnum (+ (at 0 ,x) (at 1 ,x) (at 2 ,x))))
                nconc (loop for y fixnum from 3 to (1- height)
                            ; add the 4th one
-                           collect `(incf score (with-type fixnum (at ,y ,x)))
+                           collect `(with-type fixnum (incf score (at ,y ,x)))
                            ; update counts
                            collect `(myincr)
                            ; if we re still in bounds, remove 1st of the old 4
                            if (/= y (1- height))
-                           collect `(decf score (with-type fixnum (at ,(- y 3) ,x))))))))
+                           collect `(with-type fixnum (decf score (at ,(- y 3) ,x))))))))
 
 (defmacro downright-spans ()
 ;
@@ -172,17 +171,17 @@
              (loop for startposTuple in dr
                    do (setf y (car startposTuple)) (setf x (cadr startposTuple))
                    ; first 3 of the total 4 cells
-                   collect `(setf score (with-type fixnum (+ (at ,y ,x) (at ,(fast 1+ y) ,(fast 1+ x)) (at ,(fast + y 2) ,(fast + x 2)))))
+                   collect `(setf score (with-type fixnum (+ (at ,y ,x) (at ,(1+ y) ,(1+ x)) (at ,(+ y 2) ,(+ x 2)))))
                    nconc (loop while (and (<= (+ y 3) (1- height)) (<= (+ x 3) (1- width)))
                                ; add the 4th one
-                               collect `(incf score (with-type fixnum (at ,(fast + y 3) ,(fast + x 3))))
+                               collect `(with-type fixnum (incf score (at ,(+ y 3) ,(+ x 3))))
                                ; update counts
                                collect `(myincr)
                                ; move to next cell
                                do (incf y) (incf x)
                                ; if we re still in bounds, remove 1st of the old 4
                                if (and (<= (+ y 3) (1- height)) (<= (+ x 3) (1- width)))
-                               collect `(decf score (with-type fixnum (at ,(fast 1- y) ,(fast 1- x)))))))))))
+                               collect `(with-type fixnum (decf score (at ,(1- y) ,(1- x)))))))))))
 
 (defmacro downleft-spans ()
 ;
@@ -230,17 +229,17 @@
              (loop for startposTuple in dl
                    do (setf y (car startposTuple)) (setf x (cadr startposTuple))
                    ; first 3 of the total 4 cells
-                   collect `(setf score (with-type fixnum (+ (at ,y ,x) (at ,(fast 1+ y) ,(fast 1- x)) (at ,(fast + y 2) ,(fast - x 2)))))
+                   collect `(setf score (with-type fixnum (+ (at ,y ,x) (at ,(1+ y) ,(1- x)) (at ,(+ y 2) ,(- x 2)))))
                    nconc (loop while (and (<= (+ y 3) (1- height)) (>= (- x 3) 0))
                                ; add the 4th one
-                               collect `(incf score (with-type fixnum (at ,(fast + y 3) ,(fast - x 3))))
+                               collect `(with-type fixnum (incf score (at ,(+ y 3) ,(- x 3))))
                                ; update counts
                                collect `(myincr)
                                ; move to next cell
                                do (incf y) (decf x)
                                ; if we re still in bounds, remove 1st of the old 4
                                if (and (<= (+ y 3) (1- height)) (>= (- x 3) 0))
-                               collect `(decf score (with-type fixnum (at ,(fast 1- y) ,(fast 1+ x)))))))))))
+                               collect `(with-type fixnum (decf score (at ,(1- y) ,(1+ x)))))))))))
 
 (declaim (inline scoreBoard))
 (defun scoreBoard (board)
@@ -265,11 +264,11 @@
       ((/= (aref counts 0) 0) yellowWins)
       ((/= (aref counts 8) 0) orangeWins)
       (t (let* ((forOrange (fast + (aref counts 5)
-                              (* 2 (aref counts 6))
-                              (* 5 (aref counts 7))))
+                                 (* 2 (aref counts 6))
+                                 (* 5 (aref counts 7))))
                 (forYellow (fast + (aref counts 3)
-                              (* 2 (aref counts 2))
-                              (* 5 (aref counts 1))))
+                                 (* 2 (aref counts 2))
+                                 (* 5 (aref counts 1))))
                 (result (fast - forOrange forYellow)))
            (declare (type fixnum forOrange forYellow result))
            result)))))
@@ -278,10 +277,10 @@
 (defun dropDisk (board column color)
   (declare (type (simple-array fixnum (42)) board) (type fixnum column color))
   (loop for y fixnum from (1- height) downto 0
-        do (cond ((= 0 (at y column))
-                  (progn
-                    (setf (at y column) color)
-                    (return-from dropDisk y)))))
+        when (zerop (at y column))
+        do (progn
+             (setf (at y column) color)
+             (return-from dropDisk y)))
   -1)
 
 (defun minimax (maximizeOrMinimize color depth board)
@@ -395,7 +394,6 @@
 ; (load "score4.cl")
 ; (sb-ext:save-lisp-and-die "score4.exe" :executable t :toplevel #'main)
 ;
-; Then, when you spawn "score4.exe",
-; just invoke (main)
+; Then, when you spawn "score4.exe" it automatically invokes (main)
 ;
 ; vim: set expandtab ts=8 sts=2 shiftwidth=2
