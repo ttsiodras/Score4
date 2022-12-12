@@ -24,23 +24,6 @@
                      expr
                      (expand-call type (binarize expr))))))
 
-;; (defun operation-p (x)
-;;   (member x '(+ 1+ - 1- * /)))
-
-;; (defun clone (sexpr)
-;;   (cond 
-;;     ((listp sexpr)
-;;      (if (null sexpr)
-;;          ()
-;;          (let ((hd (car sexpr))
-;;                (tl (cdr sexpr)))
-;;            ;(format t "hd:~A~%tl:~A~%op:~A~%~%" hd tl (operation-p hd))
-;;            (cond
-;;              ((listp hd) (append (list (clone hd)) (clone tl)))
-;;              ((operation-p hd) (list 'the 'fixnum (cons hd (clone tl))))
-;;              (t (cons hd (clone tl)))))))
-;;     (t sexpr)))
-
 ; in the same vein (speed) we need (in many places) to specify
 ; that the result of an operation fits in a fixnum
 ; so we macro (the fixnum (...))
@@ -60,7 +43,7 @@
                (t sexpr)))
            (operation-p (x)
              (member x '(+ 1+ - 1- * /))))
-    (declare (inline clone operations-p))
+    (declare (inline clone operation-p))
     `(,@(clone sexpr))))
 
 (defmacro at (y x)
